@@ -1,0 +1,208 @@
+#mybackground {
+    height: 98vh;
+    width: 212vh;
+    position: absolute;
+    left: calc(0px);
+    top: calc(0px);
+    background-size: cover;
+}
+
+#introcon {
+    position: absolute;
+    left: calc(5vh);
+    top: calc(1vh);
+    background-size: cover;
+}
+
+#mytitle {
+    position: relative;
+    left: calc(20px);
+    top: calc(0px);
+    background-size: cover;
+    color: lightyellow;
+}
+
+#exhibition {
+    position: relative;
+    left: calc(300px);
+    top: calc(50px);
+    background-size: cover;
+    width: 36vh;
+    height: 50vh;
+}
+
+#playerNumber1 {
+    color: lightyellow;
+    font-size: 5vh;
+    position: absolute;
+    left: calc(100vh);
+    top: calc(23vh);
+}
+
+#playerNumber2 {
+    position: absolute;
+    left: calc(130vh);
+    top: calc(25vh);
+}
+
+
+#entergame {
+    font-size: 5vh;
+    position: absolute;
+    width: 30vh;
+    height: 10vh;
+    left: calc(105vh);
+    top: calc(53vh);
+    color: lightyellow;
+}
+
+#introduction {
+    font-size: 3vh;
+    position: absolute;
+    width: 20vh;
+    height: 8vh;
+    left: calc(185vh);
+    top: calc(1vh);
+    color: lightyellow;
+}
+
+#introduction:hover {
+    width: 20vh;
+    height: 8vh;
+    color: black;
+}
+
+#pad {
+    position: absolute;
+    left: calc(25vh);
+    top: calc(20vh);
+    width: 150vh;
+    height: 40vh;
+    background-color: black;
+    border-radius: 20%;
+}
+
+#Menu {
+    position: absolute;
+    left: calc(2vh);
+    top: calc(1vh);
+    width: 18vh;
+    height: 8vh;
+    font-size: 4vh;
+    color: gainsboro;
+}
+
+#again {
+    position: absolute;
+    left: calc(22vh);
+    top: calc(1vh);
+    width: 18vh;
+    height: 8vh;
+    font-size: 4vh;
+    color: gold;
+}
+
+#seat1 {
+    text-align: center;
+    position: absolute;
+    left: calc(1vh);
+    top: calc(22vh);
+    width: 12vh;
+    height: 30vh;
+    border: 2px orange solid;
+    color: orange;
+    font-size: 5vh;
+}
+
+#seat2 {
+    text-align: center;
+    position: absolute;
+    left: calc(80vh);
+    top: calc(1vh);
+    width: 40vh;
+    height: 10vh;
+    border: 2px orange solid;
+    color: orange;
+    font-size: 5vh;
+}
+
+#seat3 {
+    text-align: center;
+    position: absolute;
+    left: calc(190vh);
+    top: calc(22vh);
+    width: 12vh;
+    height: 30vh;
+    border: 2px orange solid;
+    color: orange;
+    font-size: 5vh;
+}
+
+#myseat {
+    position: absolute;
+    left: calc(5vh);
+    top: calc(52vh);
+    color: orange;
+    font-size: 6vh;
+}
+
+#launch {
+    text-align: center;
+    position: absolute;
+    left: calc(190vh);
+    top: calc(60vh);
+    width: 16vh;
+    height: 10vh;
+    color: white;
+    font-size: 5vh;
+}
+
+#launch:hover {
+    color: black;
+}
+
+#pass {
+    text-align: center;
+    position: absolute;
+    left: calc(190vh);
+    top: calc(80vh);
+    width: 16vh;
+    height: 10vh;
+    color: red;
+    font-size: 5vh;
+}
+
+#alr {
+    text-align: center;
+    position: absolute;
+    left: calc(190vh);
+    top: calc(90vh);
+    width: 16vh;
+    height: 10vh;
+    color: red;
+    font-size: 5vh;
+}
+
+#pass:hover {
+    color: yellow;
+}
+
+#centerdisplay {
+    text-align: center;
+    position: absolute;
+    left: calc(55vh);
+    top: calc(20vh);
+    color: white;
+    font-size: 6vh;
+}
+
+#centerdisplay2 {
+    text-align: center;
+    position: absolute;
+    left: calc(65vh);
+    top: calc(42vh);
+    width: 60vh;
+    height: 10vh;
+    color: white;
+    font-size: 6vh;
+}
