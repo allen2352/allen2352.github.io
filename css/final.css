@@ -7,6 +7,13 @@
     background-size: cover;
 }
 
+#background2 {
+    position: absolute;
+    left: calc(0px);
+    top: calc(0px);
+    background-size: cover;
+}
+
 #introcon {
     position: absolute;
     left: calc(5vh);
@@ -24,25 +31,29 @@
 
 #exhibition {
     position: relative;
-    left: calc(300px);
-    top: calc(50px);
+    left: calc(365px);
+    top: calc(70px);
     background-size: cover;
+}
+
+#exhibitioncard {
     width: 36vh;
     height: 50vh;
+    border-radius: 3vh;
 }
 
 #playerNumber1 {
     color: lightyellow;
     font-size: 5vh;
     position: absolute;
-    left: calc(100vh);
-    top: calc(23vh);
+    left: calc(120vh);
+    top: calc(28vh);
 }
 
 #playerNumber2 {
     position: absolute;
-    left: calc(130vh);
-    top: calc(25vh);
+    left: calc(150vh);
+    top: calc(30vh);
 }
 
 
@@ -51,9 +62,54 @@
     position: absolute;
     width: 30vh;
     height: 10vh;
-    left: calc(105vh);
-    top: calc(53vh);
+    left: calc(125vh);
+    top: calc(57vh);
     color: lightyellow;
+}
+
+#cardback {
+    font-size: 4vh;
+    position: absolute;
+    width: 18vh;
+    height: 8vh;
+    left: calc(5vh);
+    top: calc(23vh);
+    color: lightblue;
+}
+
+#cardpad {
+    font-size: 4vh;
+    position: absolute;
+    width: 18vh;
+    height: 8vh;
+    left: calc(5vh);
+    top: calc(33vh);
+    color: lightgoldenrodyellow;
+}
+
+#recordlist {
+    font-size: 4vh;
+    position: absolute;
+    width: 18vh;
+    height: 8vh;
+    left: calc(5vh);
+    top: calc(43vh);
+    color: greenyellow;
+}
+
+#set {
+    position: absolute;
+    width: 20vh;
+    height: 20vh;
+    left: calc(185vh);
+    top: calc(70vh);
+    -webkit-transition: -webkit-transform .8s ease-in-out;
+    transition: transform .8s ease-in-out;
+}
+
+#set:hover {
+    -webkit-transform: rotate(360deg);
+    transform: rotateZ(360deg);
 }
 
 #introduction {
@@ -92,6 +148,16 @@
     color: gainsboro;
 }
 
+#Menu:hover {
+    color: blue;
+}
+
+#board {
+    position: absolute;
+    left: calc(2vh);
+    top: calc(12vh);
+}
+
 #again {
     position: absolute;
     left: calc(22vh);
@@ -99,7 +165,25 @@
     width: 18vh;
     height: 8vh;
     font-size: 4vh;
-    color: gold;
+    color: orange;
+}
+
+#again:hover {
+    color: greenyellow;
+}
+
+#record {
+    position: absolute;
+    left: calc(42vh);
+    top: calc(1vh);
+    width: 18vh;
+    height: 8vh;
+    font-size: 4vh;
+    color: red;
+}
+
+#record:hover {
+    color: black;
 }
 
 #seat1 {
@@ -205,4 +289,36 @@
     height: 10vh;
     color: white;
     font-size: 6vh;
+}
+
+.card-container {
+    width: 36vh;
+    height: 50vh;
+    position: relative;
+    perspective: 1000px;
+}
+
+.cover,
+.back {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    backface-visibility: hidden;
+    transition: transform .9s ease-in-out;
+}
+
+.cover {
+    transform: rotateY(0deg);
+}
+
+.card-container:hover .cover {
+    transform: rotateY(900deg);
+}
+
+.back {
+    transform: rotateY(-900deg);
+}
+
+.card-container:hover .back {
+    transform: rotateY(0deg);
 }
