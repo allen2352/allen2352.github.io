@@ -2,22 +2,104 @@ $('#introduction').on('click', introv);
 var intro = 0;
 $('#introcon').hide();
 var systemlock = 1;
+var temrec = ""
+var nowcardpad = 1;
+var nowcardback = 1;
+var allbattlerecord = [];
+var battlemission = 0;
+
+function myrecord() {
+    if (allbattlerecord.length == 0)
+        document.getElementById("battleboard").innerHTML = "<p style='text-align: center;color:red;font-size:4vh;'>尚無紀錄</p>";
+    else {
+        recordtext = '<table class="table table-bordered"><thead><tr><th scope="col" style="color: black; font-size: 3vh;text-align: center;">時間</th><th scope="col" style="color: black; font-size: 3vh;">人數</th><th scope="col" style="color: black; font-size: 3vh;text-align: center;">完成度</th><th scope="col" style="color: black; font-size: 3vh;">備註</th></tr></thead><tbody>';
+        for (i = 0; i < allbattlerecord.length; i++) {
+            recordtext += '<tr><td style="color: black; font-size: 2.5vh;text-align: center;">' + allbattlerecord[i][0] + '</td><td style="color: black; font-size: 2.5vh;text-align: center;">' + allbattlerecord[i][1] + '</td>';
+            if (allbattlerecord[i][2] == 0) {
+                recordtext += '<td style="color: red; font-size: 2.5vh;text-align: center;">未完成</td><td type="button" class="btn btn-primary" data-dismiss="modal" onclick="continuegame(' + i + ')">繼續</td>'
+            } else {
+                recordtext += '<td style="color: black; font-size: 2.5vh;text-align: center;">完成</td><td type="button" class="btn btn-info" data-dismiss="modal" onclick="continuegame(' + i + ')">詳情</td>'
+            }
+        }
+        recordtext += '</tbody></table>';
+        document.getElementById("battleboard").innerHTML = recordtext;
+    }
+}
+
+function continuegame(n) {
+    battlemission = n;
+    //document.getElementById("mytitle").innerHTML = 100;
+    originalcard = allbattlerecord[n][3][0];
+    everyonecard = allbattlerecord[n][3][1];
+    order100 = allbattlerecord[n][3][2];
+    cardrecord = allbattlerecord[n][3][3];
+    var info = inspection(allbattlerecord[n][3][4]);
+    win = allbattlerecord[n][3][5];
+    $('#Layout').show();
+    $('#board').hide();
+    document.getElementById("centerdisplay").innerHTML = allbattlerecord[n][3][8];
+    document.getElementById("centerdisplay2").innerHTML = '';
+    if (allbattlerecord[n][2] == 0) {
+        document.getElementById("centerdisplay2").innerHTML = info[0];
+        cardtype100 = info[1];
+    }
+    thebox = [];
+    score10 = countvalue(cardtype100, allbattlerecord[n][3][4]);
+    pln = everyonecard.length;
+    passn = allbattlerecord[n][3][6];
+    total = pln;
+    progress = 0;
+    boardheight = allbattlerecord[n][3][7];
+    $('#play').show();
+    $('#main').hide();
+    $('#seat1').show();
+    $('#seat2').show();
+    $('#seat3').show();
+    if (pln == 2) {
+        $('#seat1').hide();
+        $('#seat3').hide();
+    }
+    if (pln == 3)
+        $('#seat2').hide();
+    typesetting()
+    systemlock = 0;
+}
 
 function introv() {
-
     if (intro == 0) {
         $('#com').hide();
         $('#introcon').show();
         intro = 1;
-        document.getElementById("mybackground").src = "image/Card_pad2.png";
+        temrec = document.getElementById("background2").innerHTML;
+        document.getElementById("background2").innerHTML = "";
+        document.getElementById("mybackground").src = "image/Card_padm.png";
         document.getElementById("mybackground").style.height = "155vh";
     } else {
         $('#com').show();
         $('#introcon').hide();
         intro = 0;
-        document.getElementById("mybackground").src = "image/Card_pad.png";
+        document.getElementById("background2").innerHTML = temrec;
+        document.getElementById("mybackground").src = "image/Card_pad" + nowcardpad + ".png";
         document.getElementById("mybackground").style.height = "98vh";
     }
+}
+
+function changecardpad() {
+    cardsound();
+    nowcardpad += 1;
+    if (nowcardpad > 8) {
+        nowcardpad = 1
+    }
+    document.getElementById("mybackground").src = "image/Card_pad" + nowcardpad + ".png";
+}
+
+function changecardback() {
+    cardsound();
+    nowcardback += 1;
+    if (nowcardback > 12) {
+        nowcardback = 1;
+    }
+    document.getElementById("exhibitioncard").src = "image/Card_back" + nowcardback + ".png";
 }
 $('#entergame').on('click', start);
 var seat = [];
@@ -34,21 +116,53 @@ var order100 = 0;
 var pln = 0;
 var passn = 0;
 var total = 0;
-var victory = ['', '', '', ''];
-var vic = 0;
 var c3 = 0;
 var win = [];
 var progress = 0;
-var playername = ["玩家", "對手1", "對手2", "對手3"];
+var playername = ["玩家&ensp;", "對手1", "對手2", "對手3"];
+var cardrecord = "";
+var originalcard = "";
+var boardheight = 0;
+var nowcard = [];
 
 function menu() {
     clearInterval();
     $('#play').hide();
     $('#main').show();
+    document.getElementById("background2").innerHTML = "";
     systemlock = 1;
+}
+var recc = 0;
+
+function cardrec() {
+    if (recc == 0) {
+        $('#Layout').hide();
+        $('#board').show();
+        recc = 1;
+        var text = ""
+        for (i = 0; i < Math.floor(boardheight / 98) + 1; i++) {
+            text += "<img style='height: 98vh;width: 212vh;' src='image/Card_pad" + nowcardpad + ".png'>";
+        }
+        if (progress == 2) {
+            document.getElementById("background2").innerHTML = text + "<img style='height: 98vh;width: 212vh;' src='image/Card_pad" + nowcardpad + ".png'>";
+            document.getElementById("board").innerHTML = cardrecord + originalcard;
+        } else {
+            document.getElementById("background2").innerHTML = text;
+            document.getElementById("board").innerHTML = cardrecord;
+        }
+    } else {
+        $('#Layout').show();
+        $('#board').hide();
+        document.getElementById("background2").innerHTML = "";
+        recc = 0;
+    }
 }
 
 function start() {
+    battlemission = allbattlerecord.length;
+    var battlerecord = [Date().split(' ')[3] + ' ' + Date().split(' ')[1] + ' ' + Date().split(' ')[2] + ' ' + Date().split(' ')[4]];
+    $('#Layout').show();
+    $('#board').hide();
     clearInterval();
     everyonecard = [];
     card = [];
@@ -67,8 +181,9 @@ function start() {
     c3 = 0;
     win = [];
     progress = 0;
-    victory = ['', '', '', ''];
-    vic = 0;
+    cardrecord = "<p style='color:white;font-size:6vh;'>牌局開始:&emsp;(" + battlerecord[0] + ")</p><hr noshade='noshade' />";
+    originalcard = "";
+    boardheight = 0;
     $('#play').show();
     $('#main').hide();
     var n = $("#playerNumber2").val();
@@ -143,6 +258,14 @@ function start() {
         }
         everyonecard.push(sequence);
     }
+    originalcard += "<p style='color:white;font-size:6vh;'>初始牌:</p><hr noshade='noshade' /><p style='color:white;'>玩家:</p>";
+    for (i = 0; i < everyonecard.length; i++) {
+        if (i > 0)
+            originalcard += "<p style='color:white;'>對手" + i + ":</p>";
+        for (j = 0; j < everyonecard[i].length; j++) {
+            originalcard += "<img src='image/" + everyonecard[i][j] + ".png' style='width: 14vh;height: 22vh;'>";
+        }
+    }
     typesetting()
     for (i = 0; i < everyonecard.length; i++) {
         for (j = 0; j < everyonecard[i].length; j++) {
@@ -177,7 +300,11 @@ function start() {
             }
         }
     }
-
+    battlerecord.push(pln);
+    battlerecord.push(0);
+    var detail = [originalcard, everyonecard, order100, cardrecord, nowcard, win, passn, boardheight];
+    battlerecord.push(detail);
+    allbattlerecord.push(battlerecord)
     if (order100 != 0)
         cardtype100 = method;
     score10 = 0;
@@ -218,6 +345,8 @@ function systemplay() {
             document.getElementById("centerdisplay").innerHTML = text;
             document.getElementById("centerdisplay2").innerHTML = '';
             progress = 2;
+            allbattlerecord[battlemission][2] = 1;
+            allbattlerecord[battlemission][3][8] = text;
         }
     }
 }
@@ -244,8 +373,17 @@ function auto() {
             var passs = 'PASS'
             if (passn > win.length)
                 passs += "x" + (passn + 1 - win.length)
+            cardrecord += "<p style='color:white;font-size:6vh;'>" + playername[order100] + ":&emsp;PASS</p>"
             document.getElementById("centerdisplay2").innerHTML = passs;
             passn += 1;
+            boardheight += 10;
+            var neworder = order100 + 1;
+            if (neworder == pln)
+                neworder = 0;
+            allbattlerecord[battlemission][3][2] = neworder;
+            allbattlerecord[battlemission][3][3] = cardrecord;
+            allbattlerecord[battlemission][3][6] = passn;
+            allbattlerecord[battlemission][3][7] = boardheight;
         } else {
             passn = 0;
         }
@@ -285,18 +423,13 @@ function auto() {
     } else {
         passn += 1;
     }
-    if (everyonecard[order100].length == 0)
+    if (everyonecard[order100].length == 0) {
         win.push(playername[order100]);
+        cardrecord += "<p style='color:white;font-size:6vh;'>" + playername[order100] + "結束</p>"
+    }
     order100 += 1;
     if (order100 == pln)
         order100 = 0;
-    //sleep(1000 / $('#gamespeed').val())
-    //print(order100)
-}
-
-function auto2() {
-    cardtype100 = 2;
-    playing(0, 0, cardtype100);
 }
 
 function playing(order, score, cardtype) {
@@ -325,13 +458,19 @@ function playing(order, score, cardtype) {
 }
 
 function output(order, thecard) {
+    cardsound();
     var text = "";
+    var content = inspection(thecard)[0];
+    cardrecord += "<p style='color:white;font-size:6vh;'>" + playername[order] + ":&emsp;" + content + "&emsp;&emsp;&emsp;&emsp;&emsp;";
     for (i = 0; i < thecard.length; i++) {
-        text += "<img type='button' src='image/" + thecard[i] + ".png' style='width: 14vh;height: 22vh;'><b>&emsp;</b>";
+        text += "<img src='image/" + thecard[i] + ".png' style='width: 14vh;height: 22vh;'><b>&emsp;</b>";
+        cardrecord += "<img src='image/" + thecard[i] + ".png' style='width: 14vh;height: 22vh;'>"
+        boardheight += 26;
     }
+    cardrecord += "</p>"
     document.getElementById("centerdisplay").innerHTML = text;
     document.getElementById("centerdisplay").style.left = 98 - 9 * thecard.length + "vh";
-    document.getElementById("centerdisplay2").innerHTML = inspection(thecard)[0];
+    document.getElementById("centerdisplay2").innerHTML = content;
     for (i = 0; i < thecard.length; i++) {
         for (j = 0; j < everyonecard[order].length; j++) {
             if (everyonecard[order][j] == thecard[i]) {
@@ -340,6 +479,12 @@ function output(order, thecard) {
         }
     }
     typesetting()
+    nowcard = thecard;
+    var neworder = order100 + 1;
+    if (neworder == pln)
+        neworder = 0;
+    var detail = [originalcard, everyonecard, neworder, cardrecord, nowcard, win, passn, boardheight, text];
+    allbattlerecord[battlemission][3] = detail;
     if (order == 0)
         thebox = [];
 }
@@ -356,13 +501,19 @@ function tocard(pos, dec) {
     document.getElementById("mytitle").innerHTML = (ob);
 }*/
 
-function test1() {
+function ipass() {
     var passs = 'PASS'
     if (passn > win.length)
         passs += "x" + (passn + 1 - win.length)
+    cardrecord += "<p style='color:white;font-size:6vh;'>" + playername[order100] + ":&emsp;PASS</p>"
     document.getElementById("centerdisplay2").innerHTML = passs;
     passn += 1;
     order100 += 1;
+    boardheight += 10;
+    allbattlerecord[battlemission][3][2] = order100;
+    allbattlerecord[battlemission][3][3] = cardrecord;
+    allbattlerecord[battlemission][3][6] = passn;
+    allbattlerecord[battlemission][3][7] = boardheight;
 }
 
 function countvalue(cardtype, deckcard) {
@@ -429,6 +580,19 @@ function countvalue(cardtype, deckcard) {
     if (cardtype == 7)
         value100 += 3000;
     return value100;
+}
+
+function changemusic(n) {
+    document.getElementById("BGM").innerHTML = "BGM: " + n;
+    $("#musicbox").html('<audio type="audio/mpeg" class="Music-content" src="music/' + n + '.mp3" loop="loop"preload="auto" controls="controls" autoplay="autoplay"></audio>');
+    //   $("#BGM").innerHTML = "BGM: " + $(this).innerHTML
+}
+
+function cardsound() {
+    setTimeout(function () {
+        var sound = document.getElementById('cardsound');
+        console.log(sound.play());
+    }, 0);
 }
 
 function findcard(cardtype, deckcard) {
@@ -541,7 +705,7 @@ function typesetting() {
     document.getElementById("myseat").innerHTML = text;
 }
 
-function look() {
+function launch() {
     if (passn == pln - 1) {
         cardtype100 = 0;
     }
@@ -577,14 +741,15 @@ function look() {
     if (tf == 0) {
         c3 = 1;
         score10 = countvalue(cardtype100, thebox)
-        order100 += 1;
         output(0, thebox);
         passn = 0;
         if (everyonecard[0].length == 0) {
             score10 = 0;
             cardtype100 = 0;
             win.push(playername[0]);
+            cardrecord += "<p style='color:white;font-size:6vh;'>" + playername[order100] + "結束</p>"
         }
+        order100 += 1;
     }
     //document.getElementById("mytitle").innerHTML = judgment[0];
 }
@@ -601,6 +766,11 @@ function reduction(orig) {
         return a - b
     });
     return inb;
+}
+
+function changeex() {
+    cardsound()
+    document.getElementById("displaycard").innerHTML = '<img type="button" onclick="changeex()" src="image/' + (Math.floor(Math.random() * 55) + 1) + '.png" id="exhibitioncard">';
 }
 
 function inspection(seq) {
@@ -1451,5 +1621,4 @@ function cardfunction52() {
         thebox.push(52);
     }
 }
-
 setInterval(systemplay, 2000);
