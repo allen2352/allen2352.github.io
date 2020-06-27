@@ -27,6 +27,7 @@
     top: calc(0px);
     background-size: cover;
     color: lightyellow;
+    font-size: 7vh;
 }
 
 #exhibition {
@@ -46,14 +47,17 @@
     color: lightyellow;
     font-size: 5vh;
     position: absolute;
-    left: calc(120vh);
-    top: calc(28vh);
+    left: calc(100vh);
+    top: calc(23vh);
 }
 
 #playerNumber2 {
     position: absolute;
-    left: calc(150vh);
-    top: calc(30vh);
+    left: calc(130vh);
+    top: calc(25vh);
+    font-size: 3vh;
+    width: 6vh;
+    height: 4vh;
 }
 
 
@@ -62,7 +66,7 @@
     position: absolute;
     width: 30vh;
     height: 10vh;
-    left: calc(125vh);
+    left: calc(105vh);
     top: calc(57vh);
     color: lightyellow;
 }
@@ -72,7 +76,7 @@
     position: absolute;
     width: 18vh;
     height: 8vh;
-    left: calc(5vh);
+    left: calc(177vh);
     top: calc(23vh);
     color: lightblue;
 }
@@ -82,7 +86,7 @@
     position: absolute;
     width: 18vh;
     height: 8vh;
-    left: calc(5vh);
+    left: calc(177vh);
     top: calc(33vh);
     color: lightgoldenrodyellow;
 }
@@ -92,7 +96,7 @@
     position: absolute;
     width: 18vh;
     height: 8vh;
-    left: calc(5vh);
+    left: calc(177vh);
     top: calc(43vh);
     color: greenyellow;
 }
@@ -101,7 +105,7 @@
     position: absolute;
     width: 20vh;
     height: 20vh;
-    left: calc(185vh);
+    left: calc(175vh);
     top: calc(70vh);
     -webkit-transition: -webkit-transform .8s ease-in-out;
     transition: transform .8s ease-in-out;
@@ -116,15 +120,15 @@
     font-size: 3vh;
     position: absolute;
     width: 20vh;
-    height: 8vh;
-    left: calc(185vh);
+    height: 6vh;
+    left: calc(175vh);
     top: calc(1vh);
     color: lightyellow;
 }
 
 #introduction:hover {
     width: 20vh;
-    height: 8vh;
+    height: 6vh;
     color: black;
 }
 
@@ -213,7 +217,7 @@
 #seat3 {
     text-align: center;
     position: absolute;
-    left: calc(190vh);
+    left: calc(180vh);
     top: calc(22vh);
     width: 12vh;
     height: 30vh;
@@ -233,7 +237,7 @@
 #launch {
     text-align: center;
     position: absolute;
-    left: calc(190vh);
+    left: calc(180vh);
     top: calc(60vh);
     width: 16vh;
     height: 10vh;
@@ -248,7 +252,7 @@
 #pass {
     text-align: center;
     position: absolute;
-    left: calc(190vh);
+    left: calc(180vh);
     top: calc(80vh);
     width: 16vh;
     height: 10vh;
