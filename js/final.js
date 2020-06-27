@@ -698,7 +698,7 @@ function inlist(ob, thelist) {
 function typesetting() {
     var text = "";
     for (i = 0; i < everyonecard[0].length; i++) {
-        text += "<img type='button' onclick='cardfunction" + everyonecard[0][i] + "()' src='image/" + everyonecard[0][i] + ".png' id='poker" + everyonecard[0][i] + "' style='width: 14vh;height: 22vh;'>";
+        text += "<img type='button' onclick='cardfunction" + everyonecard[0][i] + "()' src='image/" + everyonecard[0][i] + ".png' id='poker" + everyonecard[0][i] + "' style='width: 13vh;height: 20vh;'>";
         if (i == 12)
             text += "<br>";
     }
