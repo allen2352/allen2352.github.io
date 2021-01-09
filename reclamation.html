@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>台灣墾號時空地圖</title>
+    <link rel="stylesheet" href="reclamation/ol.css" type="text/css">
+    <link rel="stylesheet" href="reclamation/openlayers.css" type="text/css">
+    <link rel="stylesheet" href="reclamation/class-style.css" type="text/css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
+    <script src="reclamation/ol.js"></script>
+    <script src="reclamation/jquery-3.2.1.js"></script>
+    
+</head>
+<body>
+    <button type="button" class="btn btn-primary" id="launch" data-bs-toggle="modal" data-bs-target="#staticBackdrop">Launch static backdrop modal</button>
+    <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="staticBackdropLabel">Modal title</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body" id="reclamationcontent"></div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">關閉</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="map" class="map"></div>
+    <div id="popup" class="ol-popup" style="display: none">
+        <a href="#" id="popup-closer" class="ol-popup-closer"></a>
+        <div id="popup-content"></div>
+    </div>
+    <div class="operation">
+        <ul>
+            <li>
+              <span id="valBox" style="color: blue;width:200px;font-size: 3vh;">時間:至1900</span>
+              <input type="range" min="1600" id="exslider" max="2000" value="1900" step="1" style="width:30vh;height: 2vh;" oninput="showVal(this.value)">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault" style="width: 3.5vh;height:3.5vh;">
+                <label class="form-check-label" for="flexCheckDefault" style="color: blue;font-size: 3vh;">
+                  &ensp;範圍:
+                </label>
+              </div>
+              <input type="number" name="points" id="inputyear" min="0" value="10" style="width:5vw;height:3vh;position:relative;left:12.5vh;top:-4vh;">
+            </li>
+        </ul>
+    </div>
+    <div id="hintbox" style="position: absolute;width: 20vw;height: 3vh;left: 0px;top: 0px;color: dodgerblue;font-size: 3vh;font-weight:bold;">文字方塊</div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="reclamation/map.js"></script>
+    <script type="text/javascript" src="reclamation/mark.js"></script>
+    <script type="text/javascript" src="reclamation/manual_draw.js"></script>
+    <script type="text/javascript" src="reclamation/function.js"></script>
+</body>
+</html>
