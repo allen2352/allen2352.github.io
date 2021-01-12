@@ -1,9 +1,9 @@
-.operation {
+#operation {
 	position: absolute;
 	left: 50vh;
 	top: 30vh;
-	width: 40vh;
-	height: 8vh;
+	width: 35vh;
+	height: 15vh;
 	background: transparent;
 }
 
@@ -17,4 +17,17 @@
 	margin-bottom: 2px;
 	margin-top: 2px;
 	margin-left: -15px;
+}
+
+#valBox {
+	cursor: move;
+}
+
+#exampleDataList {
+	position: fixed;
+	top: 1vh;
+	right: 1vw;
+	width: 18vw;
+	height: 6vh;
+	background-color: transparent;
 }

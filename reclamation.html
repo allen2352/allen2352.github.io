@@ -32,21 +32,18 @@
         <a href="#" id="popup-closer" class="ol-popup-closer"></a>
         <div id="popup-content"></div>
     </div>
-    <div class="operation">
-        <ul>
-            <li>
-              <span id="valBox" style="color: blue;width:200px;font-size: 3vh;">時間:至1900</span>
-              <input type="range" min="1600" id="exslider" max="2000" value="1900" step="1" style="width:30vh;height: 2vh;" oninput="showVal(this.value)">
-              <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault" style="width: 3.5vh;height:3.5vh;">
-                <label class="form-check-label" for="flexCheckDefault" style="color: blue;font-size: 3vh;">
-                  &ensp;範圍:
-                </label>
-              </div>
-              <input type="number" name="points" id="inputyear" min="0" value="10" style="width:5vw;height:3vh;position:relative;left:12.5vh;top:-4vh;">
-            </li>
-        </ul>
+    <div id="operation">
+        <span id="valBox" style="color: blue;width:200px;font-size: 3vh;">時間:至1900</span>
+        <input type="range" min="1600" id="exslider" max="2000" value="1900" step="1" style="width:30vh;height: 2vh;" oninput="showVal(this.value)">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault" style="width: 3.5vh;height:3.5vh;">
+          <label class="form-check-label" for="flexCheckDefault" style="color: blue;font-size: 3vh;">
+            &ensp;範圍:
+          </label>
+        </div>
+        <input type="number" name="points" id="inputyear" min="0" value="10" style="width:5vw;height:3vh;position:relative;left:12.5vh;top:-4vh;">
     </div>
+    <input class="form-control" list="datalistOptions" id="exampleDataList" placeholder="搜尋墾號">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW" crossorigin="anonymous"></script>
     <script type="text/javascript" src="reclamation/map.js"></script>
     <script type="text/javascript" src="reclamation/mark.js"></script>

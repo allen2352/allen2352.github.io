@@ -11,7 +11,7 @@ class mapMark{
             source: this.markVectorSource
         });
         this.iconFeature = new ol.Feature({
-            geometry: new ol.geom.Point(ol.proj.fromLonLat(coordinate))
+            geometry: new ol.geom.Point(ol.proj.fromLonLat(coordinate)),
         });
         this.shown=1;
         this.hover=0;
@@ -27,6 +27,8 @@ class mapMark{
         });
         this.iconFeature.setStyle(iconStyle);
         this.markVectorSource.addFeature(this.iconFeature);
+        this.markVectorSource.addFeature(new ol.Feature({
+            geometry:new ol.geom.Circle(ol.proj.fromLonLat(this.pos),1000)}));
         map.removeLayer(this.markVectorLayer);
         map.addLayer(this.markVectorLayer);
         this.shown=1;
