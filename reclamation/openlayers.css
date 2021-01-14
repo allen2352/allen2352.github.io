@@ -23,11 +23,21 @@
 	cursor: move;
 }
 
+#navigation {
+	position: fixed;
+	top: 1vh;
+	right: 20vw;
+	width: 5vw;
+	font-size: 2.5vh;
+	height: 6vh;
+}
+
 #exampleDataList {
 	position: fixed;
 	top: 1vh;
 	right: 1vw;
 	width: 18vw;
 	height: 6vh;
+	font-size: 2.5vh;
 	background-color: transparent;
 }
