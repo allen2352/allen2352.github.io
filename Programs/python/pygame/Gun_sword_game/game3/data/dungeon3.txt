@@ -1,0 +1,2 @@
+12_3_10_lisa|power,pounch,sboom,exboom 3000 1300
+46 1200 350 none
