@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
         integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
     <title>程式文件庫</title>
+    <link rel="stylesheet" href="index/index.css">
 </head>
 <body>
     <img src="image/background/index.jpg" style="width: 100%;height: 100%;position: absolute;left: 0;top: 0;">
@@ -16,11 +17,52 @@
         <div class="card-body">
           <h5 class="card-title">Adventure game</h5>
           <p class="card-text">Adventure game installation resource pack download link.</p>
-          <a href="https://github.com/allen2352/allen2352.github.io/raw/master/Programs/python/pygame/Gun_sword_game/Adventure%20game%E5%AE%89%E8%A3%9D%26%E8%A7%A3%E9%99%A4%E5%AE%89%E8%A3%9D.exe"><img src="image/button/download_btn.png"></a> 
+          <a href="https://github.com/allen2352/allen2352.github.io/raw/master/Programs/python/pygame/Gun_sword_game/Adventure%20game%E5%AE%89%E8%A3%9D%26%E8%A7%A3%E9%99%A4%E5%AE%89%E8%A3%9D.exe" style="position:relative;left: 3vw;"><img src="image/button/download.png"></a> 
         </div>
       </div>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
-        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous">
-    </script>
+      <div class="card" style="width: 25vw; position: absolute;left: 35vw;top: 15vh;border:3px #FFFFFF solid;">
+        <img src="image/cards/adobe.png" class="card-img-top"">
+        <div class="card-body">
+          <h5 class="card-title">Adobe software</h5>
+          <p class="card-text">Adobe software installation resource pack download link.</p>
+          <a type="button" id="recordlist" data-toggle="modal"
+                data-target="#recordModalLabel"><img src="image/button/download.png" style="position:relative;left: 3vw;"></a>
+        </div>
+      </div>
+            <div class="modal fade" id="recordModalLabel" tabindex="-1" role="dialog" aria-labelledby="recordModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+                    <div class="modal-content" style="width: 63vw;height: 90vh;">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Adobe resources</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <section class="ftco-section contact-section ftco-no-pb" id="contact-section">
+                                <div id="Adobedownloadboard">
+                                </div>
+                            </section>
+                        </div>
+                        <div class="modal-footer">
+                            <div class="form-group" id="downloadadobe">
+                                <button class="btn btn-outline-light"></button></div>
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+      <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+      integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous">
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+      integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous">
+  </script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+      integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous">
+  </script>
+    <script src="index/index.js"></script>
 </body>
 </html>
