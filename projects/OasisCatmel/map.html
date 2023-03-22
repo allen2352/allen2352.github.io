@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width">
+    <title>綠色地圖|綠色商店查詢</title>
+    <link rel="icon" href="static/image/ico2.ico" type="image/x-icon"/>
+    <meta name="description"  content="綠理想，新夢想，讓永續生活變成日常生活" />
+    <!-- 引用 Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <!-- 引用 Font Awesome CSS -->
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/5.13.0/css/all.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Poppins:100,200,300,400,500,600,700,800,900" rel="stylesheet">
+    <link href="static/css/index.css" rel="stylesheet">
+    <link rel="stylesheet" href="static/css/ol.css" type="text/css">
+    <link rel="stylesheet" href="static/css/openlayers.css" type="text/css">
+    <link rel="stylesheet" href="static/css/class-style.css" type="text/css">
+     <link type="text/css" href="static/css/style.css" rel="stylesheet">
+    <script src="static/js/ol.js"></script>
+    <script src="static/js/jquery-3.2.1.js"></script>
+    <script src="static/js/jquery.js"></script>
+    <script src="static/js/turn.js"></script>              
+    <script src="static/js/jquery.address-1.6.min.js"></script>
+	<script src="static/js/onload.js"></script>
+</head>
+
+<body style="background-color: #FAF6F3;">
+    <div id="store_list_map">
+    <div id="store_box" style="position:relative;left:2vw;top:20vh;width:30vw;height:90vh;border: 3px solid #CFA1A1;background-color: #FFFFFF;border-radius:1vmin 1vmin 1vmin 1vmin;overflow-y: scroll;"></div>
+    <div style="position:absolute;left: 35vw;top:20vh;width: 60vw;height: 90vh;border: 3px solid #5D7054;border-radius:1vmin 1vmin 1vmin 1vmin;">
+            <div id="map" class="map" style="position:absolute;width:100%;height:100%;"></div>
+            <div style="background-color: #5D7054;position:absolute;left:-3px;top: -0.1vh;width:60vw;height: 10vh;border-radius:1vmin 1vmin 1vmin 1vmin;">
+                <button  id="filter0" style="position:relative;left: 6vw;top:1vh;width:10vw;height: 7vh;font-size: 3.5vh;font-weight: bold; border-radius:1vmin 1vmin 1vmin 1vmin;" onclick="filter(0);">飲食</button>
+                <button  id="filter1" style="position: relative;left: 9vw;top:1vh;width:10vw;height: 7vh;font-size: 3.5vh;font-weight: bold;border-radius:1vmin 1vmin 1vmin 1vmin;" onclick="filter(1);">衣飾</button>
+                <button  id="filter2" style="position: relative;left: 12vw;top:1vh;width:10vw;height: 7vh;font-size: 3.5vh;font-weight: bold;border-radius:1vmin 1vmin 1vmin 1vmin;" onclick="filter(2);">娛樂</button>
+                <button  id="filter3" style="position: relative;left: 15vw;top:1vh;width:10vw;height: 7vh;font-size: 3.5vh;font-weight: bold;border-radius:1vmin 1vmin 1vmin 1vmin;" onclick="filter(3);">其他</button>
+            </div>
+    </div>
+    </div>
+    <div style="position: absolute;top:10vh;left:0vmin;background-color: #FAF6F3;width: 100%;height: 100%;" id="store_induction">
+        <div style="position:absolute;left:10%;top:10vh;" id="store_img"><img src="https://github.com/allen2352/allen2352.github.io/raw/master/camel/picture.png" style="width:20vw;height:auto;"></div>
+        <div style="position: absolute;left:12vw;top:55vh;" >
+            <h5 id="store_name"></h5>
+            <h5 id="category"></h5>
+            <h5 id="address"></h5>
+            </div>
+        <div style="position: absolute;left:50vw;top:10vh;" >
+        
+        <p style="color: white;font-size: 20px;color: #5D7054;width: 40vw;" id="store_content"></p>
+            <div style="position: absolute;top: 60vh;left: 25vw;width: 150px;height:65px;">
+            <div style="border: 3px solid #5D7054;width: 130px;height: 45px;position: absolute;left: 15px;top:15px;"></div>
+            <button class="animated-button-2" onclick="back_map();">
+                <div style="width: 130px;height: 45px;position:relative;top:-5px;left:-5px;font-size: 18px;background-color: #CFA1A1;color: white;text-align:center;line-height:40px;">返回</div>
+            </button>
+            </div>
+        </div>
+    </div>
+    <!--####################################################################-->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top bg-white " style="height: 12vh;">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent" style="background-color: white;">
+            <ul class="navbar-nav mr-auto"><div style="width: 4vw;"></div>
+                <li class="nav-item menu">
+                    <a class="nav-link" href="OasisCatmel.html">Oasis Catmel<span class="sr-only">(current)</span></a>
+                </li><div style="width: 25vw;"></div>
+                <li class="nav-item subopt">
+                    <a class="nav-link" href="map.html">綠色店家</a>
+                </li><div style="width: 3vw;"></div>
+                <li class="nav-item subopt">
+                    <a class="nav-link" href="promotions.html">優惠活動</a>
+                </li><div style="width: 3vw;"></div>
+                <li class="nav-item subopt">
+                    <a class="nav-link" href="declaration.html">學生找贊助</a>
+                </li><div style="width: 3vw;"></div>
+                <li class="nav-item subopt">
+                    <a class="nav-link" href="about_us.html">了解我們</a>
+                </li><div style="width: 3vw;"></div>
+                <li class="nav-item subopt" style="position: relative;top:1vh;left:6vw;">
+                    <a class="navbar-brand" href="https://www.instagram.com/oasis_catmel" target="_blank">
+                        <img src="static/image/instagram.png" alt="Logo">
+                    </a>
+                </li><div style="width: 0vw;"></div>
+                <li class="nav-item subopt" style="position: relative;top:1vh;left:6vw;">
+                    <a class="navbar-brand" href="https://www.facebook.com/grincatmels" target="_blank">
+                        <img src="static/image/facebook.png" alt="Logo">
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <footer class="ftco-footer ftco-section" style="position: absolute;top:120vh;background-color: white;width: 100%;height: 35vh;" id="page_end">
+        <a type="button" href="OasisCatmel.html" style="position:absolute;left: 10vw;top: 4vh;"><img src="static/image/footer.png" style="height: 22vh;"></a>
+        <div style="position: absolute;left: 45vw;top:3vh;">
+          <a style="color: black;;font-size: 4vh;position: relative;left: -2vw;">Oasis Catmel<span class="sr-only">(current)</span></a><br>
+          <a href="map.html" style="color: black;;font-size: 2.5vh;font-weight: lighter;">綠色店家</a><br>
+          <a href="promotion.html" style="color: black;;font-size:2.5vh;font-weight: lighter;">優惠活動</a><br>
+          <a href="declaration.html" style="color: black;;font-size:2.5vh;font-weight: lighter;">學生找贊助</a><br>
+          <a href="about_us.html" style="color: black;;font-size:2.5vh;font-weight: lighter;">了解我們</a><br>
+        </div>
+        <div style="position: absolute;left: 75vw;top:3vh;">
+          <a style="color: black;;font-size: 4vh;position: relative;left: -2vw;">CONTACT<span class="sr-only">(current)</span></a><br>
+          <a href="https://www.instagram.com/oasis_catmel" style="color: black;;font-size:2.5vh;font-weight: lighter;">Instagram</a><br>
+          <a href="https://www.facebook.com/grincatmels" style="color: black;;font-size:2.5vh;font-weight: lighter;">Facebook</a><br>
+          <a href="https://lin.ee/tZ3KIyd" style="color: black;;font-size:2.5vh;font-weight: lighter;">Line</a><br>
+          <a type="button" onclick="alert('請聯絡信箱: grin.catmels@gmail.com');" style="color: black;;font-size:2.5vh;font-weight: lighter;" >Gmail</a><br>
+        </div>
+      </footer>
+    <!--
+    <form class="d-flex">
+        <input id="mainsearch" placeholder="  🔍">
+      </form>-->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+        integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous">
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous">
+    </script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous">
+    </script>
+    <script type="text/javascript" src="static/js/map.js"></script>
+    <script type="text/javascript" src="static/js/mark.js"></script>
+    <script type="text/javascript" src="static/js/manual_draw.js"></script>
+    <script type="text/javascript" src="static/js/function.js"></script>
+    <script>
+      jQuery('#fb7-ajax').data('config',
+          {
+          "page_width":"640",
+          "page_height":"920",
+          "go_to_page":"Page",
+          "gotopage_width":"45",
+          "zoom_double_click":"1",
+          "zoom_step":"0.06",
+          "tooltip_visible":"true",
+          "toolbar_visible":"true",
+          "deeplinking_enabled":"true",
+          "double_click_enabled":"true",
+          "rtl":"false"
+           })
+      </script>
+</body>
+
+</html>

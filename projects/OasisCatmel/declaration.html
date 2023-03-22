@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width">
+    <title>綠理想 新夢想_讓永續生活成為生活的一部分</title>
+    <link rel="icon" href="static/image/ico2.ico" type="image/x-icon" / >
+    <!-- 引用 Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <!-- 引用 Font Awesome CSS -->
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/5.13.0/css/all.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Poppins:100,200,300,400,500,600,700,800,900" rel="stylesheet">
+    <link href="static/css/index.css" rel="stylesheet">
+</head>
+
+<body style="background-color: #FAF6F3;">
+    <div style="position: absolute;top:18vmin;left:30vw;">
+        <h1 style="color: #000000;font-size: 2.5vmax;font-weight: bold;position:relative;left:16vw;">尋找贊助</h1>
+        <hr size="8px" align="center" style="border: 1px solid #CFA1A1;left:-2vmax;position: relative;width: 43vmax;">
+        <p style="color: #888888;font-size:1.25vmax;position: relative;top: 0vh;left: -1.5vw;">
+            「據台大統計，學校每學年約有80個活動，近4千位學生參與活動籌備。」<br>
+
+            其實，有很多商家長期以來一直在默默贊助校園活動，<br>
+            使得我們這些熱血青年得以獲得更多資源來籌辦每一場活動。<br>
+            透過網站，我們匯集了平常有在贊助學生活動的商家，<br>同時提供部分聯繫方式，
+            希望看到這些商家的你與妳，<br>都能多多留意，也可以進店消費！<br>
+            綠洲駱駝希望能藉由贊助的互動，融入綠色行動，並且引發社群效應。<br>
+            如果您是商家，歡迎透過下方的email 聯繫我們，一起響應綠色消費行動吧！</p>
+        <hr size="8px" align="center" style="border: 1px solid #CFA1A1;left:-2vmax;position: relative;width: 43vmax;">
+        <h3 style="color: #000000;font-weight: bold;position:relative;left:-1vw;">聲明</h3>
+        <h5 style="color: #000000;font-weight: bold;position:relative;left:-1.2vw;">
+        本網站目前所提供之商家聯絡資訊與相關資料皆為商家公開資訊，<br>
+        除了特別備註外，站內商家名單與「綠洲駱駝」皆"無"合作關係，<br>
+        若商家不願意被放置於名單內或是有任何資訊錯誤需要更正，<br>
+        請透過下方的email 聯繫我們，其他合作需求亦可以透過信箱告知我們唷！
+        </h5>
+        <input type="checkbox" id="declaration" name="declaration" value="Bike" style="position:relative;left:1vw;top:10vh;" onclick="tap_declare();">
+        <label for="declaration" style="font-size: 3vh;font-weight: bold;position: relative;left:1vw;top:10vh;">本人已詳閱</label><br>
+        <form method="post" action="/sponsor" style="position:relative;top: 10vh;left:2vw;width: 250px;height:65px;">
+            {% csrf_token %}
+            <div style="border: 3px solid #5D7054;width: 230px;height: 45px;position: absolute;left: 15px;top:15px;"></div>
+            <div id="declare_btn">
+            <button class="animated-btn-false">
+                <div style="width: 230px;height: 45px;position:relative;top:4px;left:-5px;font-size: 18px;background-color: #999999;color: white;text-align:center;line-height:40px;">進入</div>
+            </button></div>
+            <input type="text" class="form-control"  id="agree_declaration" name="agree_declaration" style="visibility: hidden;">
+            <input type="submit" value="修改" id='promotions_submit' class="btn btn-outline-info py-2 px-3"  style="visibility: hidden;">
+        </form>
+    </div>
+    <!--####################################################################-->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top bg-white " style="height: 12vh;">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent" style="background-color: white;">
+            <ul class="navbar-nav mr-auto"><div style="width: 4vw;"></div>
+                <li class="nav-item menu">
+                    <a class="nav-link" href="OasisCatmel.html">Oasis Catmel<span class="sr-only">(current)</span></a>
+                </li><div style="width: 25vw;"></div>
+                <li class="nav-item subopt">
+                    <a class="nav-link" href="map.html">綠色店家</a>
+                </li><div style="width: 3vw;"></div>
+                <li class="nav-item subopt">
+                    <a class="nav-link" href="promotions.html">優惠活動</a>
+                </li><div style="width: 3vw;"></div>
+                <li class="nav-item subopt">
+                    <a class="nav-link" href="declaration.html">學生找贊助</a>
+                </li><div style="width: 3vw;"></div>
+                <li class="nav-item subopt">
+                    <a class="nav-link" href="about_us.html">了解我們</a>
+                </li><div style="width: 3vw;"></div>
+                <li class="nav-item subopt" style="position: relative;top:1vh;left:6vw;">
+                    <a class="navbar-brand" href="https://www.instagram.com/oasis_catmel" target="_blank">
+                        <img src="static/image/instagram.png" alt="Logo">
+                    </a>
+                </li><div style="width: 0vw;"></div>
+                <li class="nav-item subopt" style="position: relative;top:1vh;left:6vw;">
+                    <a class="navbar-brand" href="https://www.facebook.com/grincatmels" target="_blank">
+                        <img src="static/image/facebook.png" alt="Logo">
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <footer class="ftco-footer ftco-section" style="position: absolute;top:120vh;background-color: white;width: 100%;height: 35vh;" id="page_end">
+        <a type="button" href="OasisCatmel.html" style="position:absolute;left: 10vw;top: 4vh;"><img src="static/image/footer.png" style="height: 22vh;"></a>
+        <div style="position: absolute;left: 45vw;top:3vh;">
+          <a style="color: black;;font-size: 4vh;position: relative;left: -2vw;">Oasis Catmel<span class="sr-only">(current)</span></a><br>
+          <a href="map.html" style="color: black;;font-size: 2.5vh;font-weight: lighter;">綠色店家</a><br>
+          <a href="promotion.html" style="color: black;;font-size:2.5vh;font-weight: lighter;">優惠活動</a><br>
+          <a href="declaration.html" style="color: black;;font-size:2.5vh;font-weight: lighter;">學生找贊助</a><br>
+          <a href="about_us.html" style="color: black;;font-size:2.5vh;font-weight: lighter;">了解我們</a><br>
+        </div>
+        <div style="position: absolute;left: 75vw;top:3vh;">
+          <a style="color: black;;font-size: 4vh;position: relative;left: -2vw;">CONTACT<span class="sr-only">(current)</span></a><br>
+          <a href="https://www.instagram.com/oasis_catmel" style="color: black;;font-size:2.5vh;font-weight: lighter;">Instagram</a><br>
+          <a href="https://www.facebook.com/grincatmels" style="color: black;;font-size:2.5vh;font-weight: lighter;">Facebook</a><br>
+          <a href="https://lin.ee/tZ3KIyd" style="color: black;;font-size:2.5vh;font-weight: lighter;">Line</a><br>
+          <a type="button" onclick="alert('請聯絡信箱: grin.catmels@gmail.com');" style="color: black;;font-size:2.5vh;font-weight: lighter;" >Gmail</a><br>
+        </div>
+      </footer>
+    <!--
+    <form class="d-flex">
+        <input id="mainsearch" placeholder="  🔍">
+      </form>-->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+        integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous">
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous">
+    </script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous">
+    </script>
+    <script>
+        function change_page(){
+            $("#promotions_submit").click();
+        }
+        function tap_declare(){
+            if($("#declaration").is(":checked")){
+                $("#agree_declaration").val('agree');
+                $("#declare_btn").html('<button class="animated-button-2" onclick="change_page();"><div style="width: 230px;height: 45px;position:relative;top:-5px;left:-5px;font-size: 18px;background-color: #CFA1A1;color: white;text-align:center;line-height:40px;">進入</div></button>');
+            }else{$("#agree_declaration").val('none');$("#declare_btn").html('<button class="animated-btn-false"><div style="width: 230px;height: 45px;position:relative;top:4px;left:-5px;font-size: 18px;background-color: #999999;color: white;text-align:center;line-height:40px;">進入</div></button>')}
+        }
+    </script>
+</body>
+
+</html>
