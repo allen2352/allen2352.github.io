@@ -1,4 +1,4 @@
-53513*05*alink14*111*database.py6776*113*httpclient.pyfrom ssl import wrap_socket,CERT_NONE,PROTOCOL_SSLv23
+53515*05*alink14*111*database.py6776*113*httpclient.pyfrom ssl import wrap_socket,CERT_NONE,PROTOCOL_SSLv23
 from socket import socket,AF_INET,SOCK_STREAM,gethostname,gethostbyname,SOL_SOCKET,SO_REUSEADDR
 
 #import ssl
@@ -718,7 +718,7 @@ from alink.httpclient import Session
 from alink.tool import html_convert,display_size,Timer
 from alink.response import Http_Response,_200,_404
 
-22883*011*__pycache__4117*125*httpclient.cpython-37.pycB
+22885*011*__pycache__4117*125*httpclient.cpython-37.pycB
     Å|_eh  ã               @   sh   d dl mZmZmZ d dlmZmZmZmZmZm	Z	m
 Z
  dd„ ZG dd„ dƒZdd„ ZG d	d
@@ -780,8 +780,8 @@ User-AgentzAccept-EncodingzAccept-LanguageZGETrA   )rW   )r-   rF   rM   r
 
 .rI   N)Ússlr   r   r   r   r   r   r   r	   r
    r   r   r   rH   rI   r   r   r   r   Ú<module>   s
-   $.11573*125*httpserver.cpython-37.pycB
-    ¼ßƒe²F  ã               @   s@  d dl mZmZmZ d dlmZmZmZ d dlm	Z	 d dl
+   $.11575*125*httpserver.cpython-37.pycB
+    ÷ßƒe´F  ã               @   s@  d dl mZmZmZ d dlmZmZmZ d dlm	Z	 d dl
 m
 Z
 mZmZmZmZmZmZmZmZ d dlmZmZ d dlmZmZ d dlmZmZ d dlmZmZmZm Z  d d	l!m"Z" d d
@@ -890,7 +890,7 @@ rô   tddd w²Y nT tk
 r   tdƒ P Y n6 tk
 rF } zt|ƒ tdƒ w²W d d }~X Y nX t|d ¡  xˆ jdkrptdƒ qXW q²W | ¡  dˆ _d S )Nc            	      s0   ˆ  j d7  _ zˆ  ¡  W d ˆ  j d8  _ X d S )Nr2   )Ú
 now_acceptÚ_HttpServer__accept_clientr!   )rB   r!   r"   Údeal_accept  s    z(HttpServer.mainloop.<locals>.deal_accepté   r   rO   r2   T)Zserver_sideu   é€£ç·šä½å€: https://r&   u   
-ä¼ºæœå™¨å•Ÿå‹•ä¸­...u   é€£ç·šä½å€: http://é   gš™™™™™¹?u   è­‰æ›¸ä¸è¢«ä¿¡ä»»)ÚendÚKeyboardInterruptu   acceptå¤±æ•—)ÚtargetF)r/   r	   r
+ä¼ºæœå™¨å•Ÿå‹•ä¸­...u   é€£ç·šä½å€: http://é   gš™™™™™¹?u   [è­‰æ›¸ä¸è¢«ä¿¡ä»»])ÚendÚKeyboardInterruptu   acceptå¤±æ•—)ÚtargetF)r/   r	   r
    r   Zbindr¤   ZlistenrŸ   r   r   Zload_cert_chainZwrap_socketrS   Ú	listeningr¯   r   ZacceptÚconn_addressr   rµ   Ú	Exceptionr   Ústartr-   )rB   r±   Zmy_ipZlistenerZcontextÚer!   )rB   r"   Úmainloop  sB    	
 
 
@@ -8957,7 +8957,7 @@ function command(cmd){
 <body>
     <video style="width:70vw;" src="videoplayback.mp4" controls>
    </body>
-</html>94424*02*vm1747*18*crypt.pydef xor_bytes(content,password,start_p=0):    #start_p:å¾ç¬¬å¹¾å€‹passwordé–‹å§‹å¾ªç’°åŠ å¯†
+</html>94337*02*vm1747*18*crypt.pydef xor_bytes(content,password,start_p=0):    #start_p:å¾ç¬¬å¹¾å€‹passwordé–‹å§‹å¾ªç’°åŠ å¯†
     content_bytes=list(content)
     content_length=len(content)
     password_bytes=list(password)
@@ -10181,7 +10181,7 @@ class FWriter:
 from vm.real_disk import RDisk
 from vm.terminal import Terminal
 from vm.tool import get_host_ip
-39660*011*__pycache__1588*120*crypt.cpython-37.pycB
+39573*011*__pycache__1588*120*crypt.cpython-37.pycB
     ƒeÉ  ã               @   sp   ddd„Z dd„ ZedkrldZdZeedƒZe eed ƒZeeeƒeeƒkƒ d	Z	e ee	d
 … ee	ƒZ
 ee
@@ -10522,27 +10522,26 @@ speed_hintZremain_hintr   r   r   Z__move_filesM  sD    
    r   Z	vm.writerr   r   r    r   r3   r:   rE   rN   rR   rV   rT   rY   rw   r†   rˆ   r¸   rt   ZDiskr\   ÚTerminalr   Zmainloopr   r   r   r   Ú<module>   s8   
 
 R-  9  [
-2361*121*writer.cpython-37.pycB
-    :á‘e¼	  ã               @   sB   d dl mZ d dlmZmZ d dlmZmZ dZG dd„ dƒZ	dS )é    )ÚLock)ÚmkdirÚlistdir)ÚisfileÚisdiri   @c               @   s6   e Zd Zddd„Zdd„ Zdd„ Zdd	„ Zd
-d„ ZdS )ÚFWriteré   c             C   s   |  dd¡ d¡}|| _t|ƒs(t|ƒ g | _|  d¡ d}x>t|› d|› dƒrz| j t	|› d|› ddƒ¡ |d7 }q>W || _
+2274*121*writer.cpython-37.pycB
+    ô:’e&	  ã               @   sB   d dl mZ d dlmZmZ d dlmZmZ dZG dd„ dƒZ	dS )é    )ÚLock)ÚmkdirÚlistdir)ÚisfileÚisdiri   @c               @   s<   e Zd Zde fdd„Zdd„ Zdd„ Zdd	„ Zd
+d„ ZdS )ÚFWriteré   c             C   s   |  dd¡ d¡}|| _t|ƒs(t|ƒ g | _|  d¡ d}x>t|› d|› dƒrz| j t	|› d|› ddƒ¡ |d7 }q>W || _
 tƒ | _d S )Nú\ú/r   é   z.dkzrb+)ÚreplaceÚrstripÚ_FWriter__disk_folder_pathr   r   Ú_FWriter__fsÚ_FWriter__expand_diskr   ÚappendÚopenÚ_FWriter__slice_sizer   Ú_FWriter__lock)ÚselfZdisk_folder_pathZ
-slice_sizeÚk© r   ú)C:\Users\allen\Desktop\py\VM\vm\writer.pyÚ__init__   s    
+slice_sizeÚk© r   ú-C:\Users\allen\Desktop\py\server\vm\writer.pyÚ__init__   s    
 zFWriter.__init__c             C   s^   t | jƒ}xN||krX| j› d|› d}t|ƒs<t|dƒ ¡  | j t|dƒ¡ |d7 }qW d S )Nr
    z.dkÚwbzrb+r   )Úlenr   r   r   r   Úcloser   )r   Z	max_orderr   Zdk_namer   r   r   Z__expand_disk   s    
 
-zFWriter.__expand_diskc             C   sÜ   | j  ¡  || j }|| j }d}t|ƒ}d}xv||k r¤|t| jƒkrP|  |¡ | j| }| |d¡ |||| j | … }	d}|| |	¡7 }|t|	ƒ7 }|d7 }q0W | j  ¡  |  	||¡}
-||
-krØt
-d|› d|› ƒ‚|S )Nr   r   zdptr:z  content_len:)r   Úacquirer   r   r   r   ÚseekÚwriteÚreleaseÚreadÚ	Exception)r   ÚdptrÚcontentÚf_orderZwptrZ	write_lenZcontent_lenZresult_nÚfZ
-slice_codeZcontent2r   r   r   r      s*    
+zFWriter.__expand_diskc       
+      C   s´   | j  ¡  || j }|| j }d}t|ƒ}d}xv||k r¤|t| jƒkrP|  |¡ | j| }| |d¡ |||| j | … }	d}|| |	¡7 }|t|	ƒ7 }|d7 }q0W | j  ¡  |S )Nr   r   )	r   Úacquirer   r   r   r   ÚseekÚwriteÚrelease)
+r   ÚdptrÚcontentÚf_orderZwptrZ	write_lenZcontent_lenZresult_nÚfZ
+slice_coder   r   r   r      s$    
 
 
 
 
 
 
-zFWriter.writec             C   s–   | j  ¡  || j }|| j }g }x^|dkr€|t| jƒkr<P | j| }| |d¡ | |¡}d}| |¡ |t|ƒ8 }|d7 }q$W | j  ¡  d 	|¡S )Nr   r   ó    )
-r   r   r   r   r   r   r!   r   r    Újoin)r   r#   Znumr%   ZrptrZcontent_boxr&   Zslice_contentr   r   r   r!   3   s     
+zFWriter.writec             C   s–   | j  ¡  || j }|| j }g }x^|dkr€|t| jƒkr<P | j| }| |d¡ | |¡}d}| |¡ |t|ƒ8 }|d7 }q$W | j  ¡  d 	|¡S )Nr   r   ó    )
+r   r   r   r   r   r   Úreadr   r    Újoin)r   r!   Znumr#   ZrptrÚcontent_boxr$   Zslice_contentr   r   r   r&   0   s     
 
 
 
@@ -10550,12 +10549,11 @@ r   r   r   r   r   r   r!   r   r    Újoin)r   r#   Znumr%   ZrptrZ
 
 
 
-zFWriter.readc             C   s   x| j D ]}| ¡  qW d S )N)r   r   )r   r&   r   r   r   r   D   s    zFWriter.closeN)r   )Ú__name__Ú
-__module__Ú__qualname__r   r   r   r!   r   r   r   r   r   r      s
-   
-r   N)
-Z	threadingr   Úosr   r   Úos.pathr   r   ÚGBr   r   r   r   r   Ú<module>   s   330*123*__init__.cpython-37.pycB
-    Ûƒe†   ã               @   s4   d dl mZ d dlmZ d dlmZ d dlmZ dS )é    )ÚVDisk)ÚRDisk)ÚTerminal)Úget_host_ipN)Zvm.virtual_diskr   Zvm.real_diskr   Zvm.terminalr   Zvm.toolr   © r   r   ú+C:\Users\allen\Desktop\py\VM\vm\__init__.pyÚ<module>   s   16419*18*cloud.pyfrom alink import _200,_404
+zFWriter.readc             C   s   x| j D ]}| ¡  qW d S )N)r   r   )r   r$   r   r   r   r   A   s    zFWriter.closeN)	Ú__name__Ú
+__module__Ú__qualname__ÚGBr   r   r   r&   r   r   r   r   r   r      s
+   r   N)
+Ú	threadingr   Úosr   r   Úos.pathr   r   r,   r   r   r   r   r   Ú<module>   s   330*123*__init__.cpython-37.pycB
+    Ûƒe†   ã               @   s4   d dl mZ d dlmZ d dlmZ d dlmZ dS )é    )ÚVDisk)ÚRDisk)ÚTerminal)Úget_host_ipN)Zvm.virtual_diskr   Zvm.real_diskr   Zvm.terminalr   Zvm.toolr   © r   r   ú+C:\Users\allen\Desktop\py\VM\vm\__init__.pyÚ<module>   s   16464*18*cloud.pyfrom alink import _200,_404
 from alink import *
 from apython import Apython
 from vm import RDisk,VDisk
@@ -10646,8 +10644,10 @@ def index_display_file(user,request,filepath=''):      #æ›´æ–°æª”æ¡ˆdisplayæ¡†
     if icon == 'picture':
         main_element = f'<img style="width:70vw;" src="{src}">'
     elif road.split('.')[-1] in ('txt', 'py', 'css', 'html', 'js','cpp','ino','cs','c','url'):
+        print(disk)
+        content = disk.open(road, 'rb').read()
         try:
-            content = disk.open(road, 'r', encoding='utf-8').read()
+            content=content.decode('utf-8')
         except:
             content = 'utf-8ç„¡æ³•è§£ç¢¼è©²æª”æ¡ˆ'
         content = html_convert(content)

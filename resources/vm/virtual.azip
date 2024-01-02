@@ -1,0 +1,1681 @@
+94424*02*vm1747*18*crypt.pydef xor_bytes(content,password,start_p=0):    #start_p:å¾ç¬¬å¹¾å€‹passwordé–‹å§‹å¾ªç’°åŠ å¯†
+    content_bytes=list(content)
+    content_length=len(content)
+    password_bytes=list(password)
+    p_len = len(password)
+    password_box=password_bytes[start_p%p_len:]
+    link_times=(content_length-len(password_box))//p_len
+    password_box+=password_bytes*link_times
+    password_box+=password_bytes[:content_length-len(password_box)]
+    void_byte=[a^b for a,b in zip(content_bytes,password_box)]
+    return bytes(void_byte)
+def generate_password(password,length): #å¯†ç¢¼,æœ€çŸ­é•·åº¦
+    def generate(password_bytes):
+        void_password=[]
+        for b in range(2):
+            for i in range(len(password_bytes)-1-b):
+                void_password.append((password_bytes[i]^password_bytes[i+1+b]+password_bytes[i])%256)
+        return void_password
+    if len(password)==0:
+        password=b'123'
+    while len(password)<4:
+        password+=xor_bytes(password,b'azbycx')     #å¢åŠ äº‚æ•¸ï¼Œè‹¥å¯†ç¢¼>4å°±ä¸å¢åŠ äº‚æ•¸
+    password_bytes = list(password)
+    #å¢åŠ è®ŠåŒ–
+    for i in range(len(password_bytes)):
+        password_bytes[i]+=i
+    password_bytes = generate(password_bytes)       #è‡³å°‘è¦generateä¸€æ¬¡
+    while len(password_bytes)<length:
+        password_bytes=generate(password_bytes)
+    return bytes(password_bytes)
+
+if __name__ == '__main__':
+    string=b'hello world,this is my first program. In this project,I make an encrypt function.'
+    password=b'all'
+    password2 = generate_password(password, 100)
+    encrypt=xor_bytes(string,password2,0)
+    print(len(encrypt)==len(string))
+    k=8
+    decrypt=xor_bytes(encrypt[k:],password2,k)
+    print(decrypt)
+2082*112*real_disk.pyfrom os import listdir,mkdir,rmdir,getcwd,rename,remove,chdir,popen
+from os.path import isdir,isfile,getsize,isabs
+
+class RDisk:
+    def __init__(self):
+        self.work_folder=getcwd().replace('\\','/')
+    def __relatively_to_absolute(self,filepath):
+        if isabs(filepath):     #çµ•å°è·¯å¾‘
+            return filepath
+        return f'{self.work_folder}/{filepath}'
+    def listdir(self,foldername=None):
+        if foldername==None:
+            foldername=self.work_folder
+        foldername=self.__relatively_to_absolute(foldername)
+        if foldername==None:
+            return listdir(self.work_folder)
+        return listdir(foldername)
+    def mkdir(self,foldername):
+        folderpath=self.__relatively_to_absolute(foldername)
+        if not isdir(folderpath):
+            mkdir(folderpath)
+    def rmdir(self,foldername):
+        rmdir(self.__relatively_to_absolute(foldername))
+    def getcwd(self):
+        return self.work_folder
+    def rename(self,filename1,filename2):
+        rename(self.__relatively_to_absolute(filename1),self.__relatively_to_absolute(filename2))
+    def remove(self,filepath):
+        remove(self.__relatively_to_absolute(filepath))
+    def chdir(self,foldername):
+        if isdir(foldername):
+            self.work_folder=self.__relatively_to_absolute(foldername.replace('\\','/').rstrip('/'))
+    def isfile(self,filepath):
+        return isfile(self.__relatively_to_absolute(filepath))
+    def isdir(self,folderpath):
+        return isdir(self.__relatively_to_absolute(folderpath))
+    def getsize(self,filepath):
+        return getsize(self.__relatively_to_absolute(filepath))
+    def open(self,filepath,*args,**kwargs):
+        filepath=self.__relatively_to_absolute(filepath)
+        return open(filepath,*args,**kwargs)
+    def popen(self,command):
+        mypath = getcwd()
+        chdir(self.work_folder)
+        result=popen(command)
+        chdir(mypath)
+        return result
+    def close(self):    #ç‚ºäº†é…åˆvirtual diskè€Œè¨­ç«‹çš„å‡½æ•¸
+        pass
+5401*111*terminal.pyfrom time import time
+
+t_cmd='''
+çµ‚ç«¯æ©ŸæŒ‡ä»¤:
+
+help                               æŸ¥çœ‹å¯ç”¨æŒ‡ä»¤
+system                             æŸ¥çœ‹ç³»çµ±è³‡è¨Š
+
+input    filepath                  å°‡filepathå­˜å…¥è™›æ“¬ç£ç¢Ÿ
+output   v_filename r_filename     å°‡v_filenameå¾è™›æ“¬ç£ç¢ŸåŒ¯å‡ºï¼Œä¸¦å‘½åç‚ºr_filename
+mkdir    foldername                å‰µå»ºfoldernameè³‡æ–™å¤¾
+cd       foldername                é€²å…¥è³‡æ–™å¤¾
+cd..                               é›¢é–‹è³‡æ–™å¤¾
+dir      foldername                æŸ¥çœ‹foldernameåº•ä¸‹æ‰€æœ‰æª”æ¡ˆè³‡æ–™
+info     filename                  æŸ¥çœ‹filenameè³‡è¨Š
+remove   filename                  ç§»é™¤filename
+
+
+'''
+class Terminal:                      #ç£ç¢Ÿæ“ä½œç³»çµ±
+    def __init__(self,disk,mode=0):          #mode[0:å°å‡ºçµæœ,1:è¨˜éŒ„åœ¨output,2:ç„¡ç´€éŒ„]
+        self.disk=disk
+        self.banlist='/\\:*?"<>|'
+        self.folderpath=''
+        self.log_text=[]                      #äº‹ä»¶ç´€éŒ„
+        self.output=[]
+        self.error=0
+        self.mode=mode
+    def log(self,msg,error=1):
+        self.log_text.append((time(),error,msg))
+        if self.mode==0:print(msg)
+        elif self.mode==1:self.output.append(msg)
+        self.error=error
+    def operate(self,string):                      #åŸ·è¡Œå‘½ä»¤
+        self.log_text.append((time(),0,string))
+        cmd=string.split(' ')
+        if cmd[0]=='help':print(t_cmd,end='')
+        elif cmd[0]=='system':
+            disk.recalculate_size()
+            self.log(f'å·²ä½¿ç”¨ç©ºé–“:{esize(disk.used_size)}')
+            self.log(f'ç³»çµ±æ‰€å ç©ºé–“:{esize(disk.fdsc_size+disk.fdc_size+disk.fsc_size)}')
+        elif cmd[0]=='cd..':
+            folder=self.folderpath.split('/')[-1]
+            self.folderpath=self.folderpath[:-len(folder)-1]
+        elif len(cmd)==1 and cmd[0]=='dir':
+            self.log('\n'.join(self.disk.listdir(self.folderpath)))
+        elif len(cmd)>1:
+            filename=cmd[1]
+            check_code=0                       #0ä»£è¡¨åˆæ ¼
+            if len(filename)==0:
+                self.log('æª”æ¡ˆåç¨±ä¸å¯ç‚ºç©º!')
+                check_code=2                    #2ä»£è¡¨ä¸åˆæ ¼
+            for i in self.banlist:
+                if i in filename:
+                    if i in '/\\':
+                        check_code=1        #1ä»£è¡¨æª”åå¯èƒ½ä½¿ç”¨çµ•å°è·¯å¾‘
+                    else:
+                        self.log(f'æª”æ¡ˆåç¨±"{filename}"ä¸­åŒ…å«ä¸å¯ä½¿ç”¨çš„å­—å…ƒ:{i}')
+                        check_code=2                                                 #2ä»£è¡¨ä¸åˆæ ¼
+           # print('1 self.folderpath:',self.folderpath)
+            if check_code==1:
+                fpath=filename
+            elif self.folderpath == '':
+                fpath = filename
+            else:
+                fpath = self.folderpath + '/' + filename
+           # print('2 self.folderpath:',self.folderpath)
+            print('fpath:',fpath)
+            if check_code<2:
+
+                file = self.disk.fopen(fpath, mode=0)
+                if cmd[0]=='mkdir':
+                    if file!=-1:
+                        if file.type==0:self.log('è©²è³‡æ–™å¤¾å·²å­˜åœ¨')
+                        else:self.log('æ­¤ç‚ºå·²å­˜åœ¨çš„æª”æ¡ˆåç¨±')
+                    else:self.disk.mkdir(fpath)
+                if cmd[0]=='cd':
+                    if file!=-1 and file.type==0:self.folderpath=fpath
+                    else:self.log('è©²è³‡æ–™å¤¾ä¸å­˜åœ¨!')
+                elif cmd[0]=='dir':
+                    if file!=-1 and file.type==0:self.log('\n'.join(self.disk.listdir(fpath)))
+                    else:self.log('è©²è³‡æ–™å¤¾ä¸å­˜åœ¨!')
+                elif cmd[0]=='info':
+                    if file!=-1:self.log(file.get_info())
+                    else:self.log('è©²æª”æ¡ˆä¸å­˜åœ¨!')
+                elif cmd[0]=='remove':
+                    if file!=-1:self.disk.remove(fpath)
+                    else:self.log('è©²æª”æ¡ˆä¸å­˜åœ¨!')
+                elif cmd[0] == 'input':
+                    if path.isfile(cmd[1]) or path.isdir(cmd[1]):
+                        # print('fpath:',fpath)
+                        check = self.disk.input(self.folderpath, cmd[1],progress_func=progress_bar)
+                        if check == -1: self.log('ç„¡æ•ˆçš„è™›æ“¬è·¯å¾‘')
+                    else:
+                        self.log(f'{cmd[1]}ä¸å­˜åœ¨!')
+                elif len(cmd)>2:
+                    if cmd[0]=='output':
+                        if path.isfile(cmd[2]):
+                            self.log('ç„¡æ³•è¦†è“‹ç¾æœ‰çš„æª”æ¡ˆ!')
+                        else:
+                            check=self.disk.output(fpath,cmd[2])
+                            if check==-1:self.log('è©²è™›æ“¬æª”æ¡ˆä¸å­˜åœ¨')
+        print(f'\n{disk.disk_path}#{self.folderpath}>>',end='')
+    def mainloop(self):
+        self.operate('help')
+        while True:
+            a=input()
+            if a=='exit':break
+            elif a=='format':
+                self.disk.format()
+                self.folderpath=''
+            else:
+                b=a.split(' ')
+                if b[0]=='ptr':
+                    file=FILE(self.disk,b[1])
+                    if file.type==0:
+                        print(file.read(0,0))
+                else:
+                    self.operate(a)740*17*tool.pyfrom socket import socket,AF_INET,SOCK_DGRAM,timeout,gethostname,gethostbyname
+def display_size(size):   #Byteè½‰size
+    for i in range(4):
+        base=2**((3-i)*10)
+        if size>base:
+            return f'{round(size/base,2)}'+('GB','MB','KB','bit')[i]
+def Default_progress_bar(now,total,width=50,hint=''):
+    process=int(width*now/total)
+    print('\rprocess:['+'â–‡'*process+' '*(width-process)+f']  {round(100*now/total,2)}%  {hint}',end='  ')
+def get_host_ip():
+    s = socket(AF_INET,SOCK_DGRAM)
+    s.settimeout(2)
+    try:
+        s.connect(("8.8.8.8", 80))    #https://dns.google/
+        ip=s.getsockname()[0]
+    except timeout:
+        ip=gethostbyname(gethostname())
+    s.close()
+    return ip42241*115*virtual_disk.pyfrom os import path,listdir
+from time import time,localtime,sleep
+from vm.crypt import xor_bytes,generate_password
+from vm.real_disk import RDisk
+from vm.tool import display_size,Default_progress_bar
+from vm.writer import FWriter
+'''
+æª”æ¡ˆç³»çµ±ï¼Œæ¯å€‹å–®ä½æ˜¯1024Byte
+
+'''
+def progress_bar(now_size,total_size,size=50):
+    i=int(size*now_size/total_size)
+    print('\r[' + '#' * i + ' ' * (size - i) + f'] {esize(now_size)}/{esize(total_size)}', end='')
+def nowtime(t):
+    nt=localtime(t)
+    return f'{nt.tm_year}/{nt.tm_mon}/{nt.tm_mday} {nt.tm_hour}:{nt.tm_min}:{nt.tm_sec}'
+def esize(size):
+    size_unit=('B','KB','MB','GB','TB','PB','EB')
+    for i in range(len(size_unit)):
+        csize=round(size/(2**(10*i)),2)
+        if csize<1024:
+            return f'{csize} {size_unit[i]}'
+def legel_filename(filename):
+    format=filename.split('.')[-1]
+    name=filename[:-len(format)-1]
+    banlist = '/\\:*?"<>|'
+    for i in banlist:
+        name = name.replace(i, '_')
+    o=listdir()
+    if f'{name}.{format}' not in o:return f'{name}.{format}'
+    c=1
+    while f'{name}_{c}.{format}' in o:
+        c+=1
+    return f'{name}_{c}.{format}'
+def format_file_size(size):  # sizeç‚ºbyteå¤§å°
+    s = str(int(size)).encode('utf-8')
+    a = '0'.encode('utf-8')
+    return a * (15 - len(s)) + s
+def file_info(isfile,build_t,last_update_t,last_read_t,file_size,file_location):
+    def format_isfile(isfile):
+        return ('1' if isfile else '0').encode('utf-8')
+    def format_time(t):
+        n = str(int(t)).encode('utf-8')
+        a='0'.encode('utf-8')
+        return a * (10 - len(n)) + n[-10:]
+    def format_file_location(location):
+        a='0'.encode('utf-8')
+        location_byte=location.encode('utf-8')
+        return location_byte+a*(67-len(location_byte))
+    return format_isfile(isfile)+format_time(build_t)+format_time(last_update_t)+format_time(last_read_t)+format_file_size(file_size)+format_file_size(0)+format_file_location(file_location)
+
+'''é€šç”¨åè©è¨»è¨˜
+ptr:åœ¨FILEä¸­çš„ä½å€
+dptr:åœ¨ç£ç¢Ÿä¸­çš„ä½å€
+'''
+def text_to_serial(text):                         # ä¸²åˆ—æ ¼å¼è®€å–e.g.   100,200-400,345,356,10-50,57*
+    k = text.index('*')
+    box=[]
+    for i in text[:k].split(','):
+        if '-' in i:
+            c = i.split('-')
+            box.append((int(c[0]), int(c[1])))
+        else:
+            box.append(int(i))
+    return box
+def serial_to_text(serial):
+    text = ''
+    for i in serial:
+        if type(i) == int:
+            text += f'{i},'
+        elif type(i) == tuple:
+            text += f'{i[0]}-{i[1]},'
+    return text[:-1] + '*'
+def sort_serial(serial):
+    get={}
+    box,nbox=[],[]
+    for i in serial:
+        if type(i)==int:
+            get[i]=i
+            box.append(i)
+        elif type(i)==tuple:
+            get[i[0]]=i
+            box.append(i[0])
+    box.sort()
+    for i in box:
+        nbox.append(get[i])
+    return combine_serial(nbox)
+def combine_serial(serial):
+    tem=[0,'no']
+    result=[]
+    c=0
+    while c<len(serial):
+        if type(serial[c])==int:deal=(serial[c],serial[c]+1024)
+        else:deal=serial[c]
+        if deal[0]==tem[1]:
+            tem[1]=deal[1]
+        else:
+            result.append((tem[0],tem[1]))
+            tem=[deal[0],deal[1]]
+        c+=1
+    result.append((tem[0], tem[1]))
+    del result[0]
+    return result
+class Space_Serial:                                                       #æª”æ¡ˆæ‰€ä½”ç©ºé–“åºåˆ—
+    def __init__(self,disk,ptr,extend_ptr,location):
+        self.ptr=ptr
+        self.disk=disk
+        self.ptrs=[extend_ptr]
+        while extend_ptr>0:
+            if disk.debug:
+                print('extend_ptr:',extend_ptr)
+            fetch=self.disk.file_describe_space_configuration.read(extend_ptr).decode('utf-8')
+            if disk.debug:
+                print('fetch:',fetch)
+          #  print('fetch:',fetch)
+            extend_ptr=int(fetch[:15])
+            self.ptrs.append(extend_ptr)          #æœ€å¾Œä¸€å€‹ptrå¿…å®šæ˜¯0
+            location+=fetch[15:128]
+      #  print(self.ptrs)
+      #  print('location:',location)
+        self.serial=text_to_serial(location)
+    def now_max_size(self):             #ç•¶å‰æ‰€å­˜æ”¾çš„æœ€å¤§ç©ºé–“
+        total=0
+        for i in self.serial:
+            if type(i)==int:
+                total+=1
+            elif type(i)==tuple:
+                total+=(i[1]-i[0])/1024
+        return int(total*1024)
+    def resize(self,size):                                                   #èª¿æ•´å…§å®¹å¤§å°
+        now_max_size=self.now_max_size()
+        if size>now_max_size:        #å¦‚æœç©ºé–“ä¸è¶³ï¼Œå°±ç”³è«‹
+            need=(size-now_max_size)//1024+1                    #éœ€è¦çš„ç©ºé–“å€‹æ•¸
+            apply_serial=self.disk.apply_space(need)
+            self.serial+=apply_serial
+        elif size<now_max_size-1024:
+            need=size//1024+1
+            abort_serial=[]
+            c=0
+            while need>0:
+                if type(self.serial[c])==int:
+                    need-=1
+                elif type(self.serial[c])==tuple:
+                    deal=[self.serial[c][0],self.serial[c][1]]
+                    while need>0 and deal[1]-deal[0]>0:
+                        need-=1
+                        deal[0]+=1024
+                    if deal[1]-deal[0]>0:
+                        self.serial[c]=(self.serial[c][0],deal[0])
+                        abort_serial.append((deal[0],deal[1]))
+                c+=1
+            abort_serial+=self.serial[c:]
+            self.serial=self.serial[:c]
+          #  print('abort:',abort_serial)
+            self.disk.release_space(abort_serial)
+        self.save()
+    def save(self):                                          #å„²å­˜
+        self.serial=combine_serial(self.serial)
+       # print(self.serial)
+        byte=serial_to_text(self.serial).encode('utf-8')
+        n=len(byte)
+        ptrs=[self.ptr]+self.ptrs
+        c=0                     #ç›®å‰ç‚ºç¬¬cå€‹ptr
+     #   print('å…¨byteç‚º:',byte)
+      #  print('nç‚º:',n)
+        while n>0:
+            if c==0:n-=67
+            else:n-=113
+            if n<=0:                       #å°±æ­¤çµæŸ
+                ptrs[c+1]=0
+            else:                          #å†ç”³è«‹ä¸€å€‹
+                if ptrs[c+1]==0:
+                    ptrs[c+1]=self.disk.register_describe_configuration()
+                    ptrs.append(0)
+            if c==0:
+              #  print('å‘¼å«fdsc1----------------------')
+              #  print('ptrs:',ptrs)
+                self.disk.file_describe_space_configuration.write(ptrs[c]+46, format_file_size(ptrs[c+1])+byte[:67])
+            else:
+                self.disk.file_describe_space_configuration.write(ptrs[c],format_file_size(ptrs[c+1])+byte[c*113-46:c*113+67])
+            c+=1
+        if c+1<len(ptrs):
+            self.disk.unregister_describe_configuration(ptrs[c+1:-1])                   #å–æ¶ˆç™»è¨˜
+        self.ptrs=ptrs[1:c+1]
+        self.disk.save_configuration()
+class FDSC:
+    def __init__(self,disk,ptr,unit):       #unitç‚ºæ¯æ¬¡æ“´å±•å–®ä½ï¼Œç‚º8çš„å€æ•¸
+        self.disk=disk
+        self.unit=unit
+        fetch=self.disk.f.read(ptr,128).decode('utf-8')
+        self.dptrs=[ptr,int(fetch[46:61])]
+        while self.dptrs[-1]>0:
+            fetch=self.disk.f.read(self.dptrs[-1],128)
+            self.dptrs.append(int(self.disk.f.read(self.dptrs[-1]+46,15).decode('utf-8')))
+        self.max_term=self.__get_max_term()
+    def __get_max_term(self):                                  #è‡ªèº«å¯ç™»è¨˜çš„æª”æ¡ˆæœ€å¤§é …
+        return (len(self.dptrs)-1)*self.unit
+    def extend(self,ptr):                 #æ“´å±•å¯ç”¨ç©ºé–“
+        self.dptrs[-1]=ptr
+        #----------------------------------æ›´æ–°èˆŠç‰ˆé¢
+      #  print('dparts:',self.dptrs)
+        #print('extend:',self.dptrs[-2],format_file_size(self.dptrs[-1]))
+        self.disk.f.write(self.dptrs[-2] + 46,format_file_size(self.dptrs[-1]))
+        #----------------------------------æ›´æ–°æ–°ç‰ˆé¢
+        self.dptrs.append(0)
+        #print('extend2:',self.dptrs[-2],format_file_size(self.dptrs[-1]))
+        self.disk.f.write(self.dptrs[-2] + 46,format_file_size(self.dptrs[-1]))
+        #-----------------------------------æ›´æ–°æœ€å¤§é …
+        self.max_term=self.__get_max_term()
+    def write(self,ptr,content):
+        if ptr in self.dptrs:
+            print(ptr)
+            raise Exception('æ­¤ä½ç½®è¢«å ç”¨')
+        #  print('çµ¦çš„ptrç‚º:',ptr)
+        order = ptr // 128  # ç¬¬å¹¾é …
+        page = order // self.unit  # ç¬¬å¹¾é 
+        offset = order - self.unit * page  # ç¬¬pageé åç§»å¤šå°‘
+        offset2=ptr-(ptr//128)*128
+        dptr = self.dptrs[page] + offset * 128+offset2
+        return self.disk.f.write(dptr,content)
+    def read(self,ptr):
+        order=ptr//128                            #ç¬¬å¹¾é …
+        page=order//self.unit                            #ç¬¬å¹¾é 
+        offset=order-self.unit*page              #ç¬¬pageé åç§»å¤šå°‘
+        dptr=self.dptrs[page]+offset*128
+        if self.disk.debug:
+            print('self.dptr:',self.dptrs)
+            print('page:',page)
+            print('dptr:',dptr)
+        return self.disk.f.read(dptr,128)
+class FOLDER:
+    def __init__(self,disk,ptr,encrypt=None):
+        self.disk=disk
+        self.ptr=ptr
+        self.encrypt=encrypt
+        self.file=FILE(self.disk,self.ptr,encrypt=self.encrypt)
+        self.file_size=self.file.file_size
+        self.type=self.file.type
+        self.box=[]
+        self.__load_content()
+        self.reload()
+    def get_info(self):
+        self.file.get_info()
+    def set_type(self,ty):
+        self.file.set_type(ty)
+        self.type=ty
+    def __load_content(self):
+        content = self.file.read(0,0)
+        try:
+            self.content=content.decode('utf-8')
+            self.access_rights=True
+            self.set_type(0)
+        except UnicodeDecodeError:
+            self.content=''
+            self.access_rights=False
+      #  print('ç²å–Content:',self.content)
+    def reload(self):                     #å°‡self.contentè½‰ç‚ºå¯ä½¿ç”¨list
+       # print('reload:',self.content)
+        box = self.content.split('|**')[0].split('|')[1:]
+        self.box=[]
+        for i in range(len(box)):
+            name, ptr = box[i].split('*')
+            self.box.append([name, int(ptr)])
+    def save(self):
+        if self.access_rights:
+            box=[]
+            for name,ptr in self.box:
+                box.append(f'|{name}*'.encode('utf-8')+format_file_size(ptr))
+            box.append('|**'.encode('utf-8'))
+            byte=b''.join(box)
+            if self.type==1:
+                self.file.set_type(0)
+                self.type=self.file.type
+          #  self.file.file_size=len(byte)
+            self.file.set_size(len(byte))
+           # print('\rnow size:',len(byte),end='')
+            self.file.write(byte,0)
+            content=byte.decode('utf-8')
+
+            self.__load_content()
+            if content!=self.content:
+                print(content)
+                print(self.content)
+                raise Exception('stop')
+        else:
+            raise Exception('folderå„²å­˜å¤±æ•—')
+    def listdir(self,fptr=True):
+        if len(self.box)==0:self.reload()
+        if not fptr:
+            box=[]
+            for i in self.box:
+                box.append(i[0])
+            return box
+        return self.box
+    def get_file_ptr(self,filename):
+      #  print('Content:',self.content)
+        try:
+          #  print('æ‰€æ±‚æª”å:',filename)
+            nk=self.content.index(f'|{filename}*')
+            pk=self.content.index('*',nk)
+            ptr=int(self.content[pk+1:pk+16])
+        except:ptr=-1
+       # print('get ptr:',ptr)
+        return ptr
+    def CreatFile(self,filename):
+        if not self.access_rights:return -1
+        banlist = '/\\:*?"<>|'
+        for i in banlist:
+            filename = filename.replace(i, '_')
+        self.reload()
+        login_ptr=self.disk.register_describe_configuration(1)          #ç²å–ç™»è¨˜ç©ºé–“
+        space_serial=serial_to_text(self.disk.apply_space(1))
+        #print('ç™»è¨˜ptr:',login_ptr)
+        #print('ç©ºé–“ptr:',space_ptr)
+        t=time()
+        login_info=file_info(True,t,t,t,0,space_serial)
+        #print('ç™»è¨˜è³‡è¨Š:',login_info)
+       # print('å‘¼å«fdsc')
+        self.file.fdsc.write(login_ptr,login_info)
+        self.box.append([filename,login_ptr])
+        self.save()
+        return login_ptr
+    def is_exist(self,filename):    #æ˜¯å¦å­˜åœ¨filename
+        for i in self.box:
+            if i[0] == filename:
+                return i
+        return False
+    def MoveFile_to_AnotherFolder(self,filename1,filename2,anotherfolder,overwrite=True):
+        self.reload()
+        file1_info = self.is_exist(filename1)
+        if not file1_info:
+            print('èµ·å§‹åœ°æª”æ¡ˆä¸å­˜åœ¨')
+            return -1
+        if self.ptr==anotherfolder.ptr:    #ä»£è¡¨æ˜¯åŒä¸€å€‹è³‡æ–™å¤¾
+            file1_info[0]=filename2
+        else:
+            anotherfolder.reload()
+            file2_info = anotherfolder.is_exist(filename2)
+            if file2_info:
+                if not overwrite:
+                    print('ç›®çš„åœ°æª”æ¡ˆåç¨±å·²å­˜åœ¨')
+                    return -1
+                anotherfolder.DeleteFile(filename2)  #åˆªé™¤åŸæœ‰æª”æ¡ˆ
+            self.box.remove(file1_info)
+            anotherfolder.box.append(file1_info)
+            anotherfolder.save()
+        self.save()
+        return file1_info[1]
+    def DeleteFile(self,name):
+        self.reload()
+        dptr=-1
+        for i in self.box:
+            if i[0]==name:
+                dptr=i[1]
+                self.box.remove(i)
+        self.save()
+        if dptr!=-1:
+            #--------------------é‡‹æ”¾æª”æ¡ˆè³‡æº
+            f=FILE(self.disk,dptr,encrypt=self.encrypt)
+            f.space_manaager.resize(-1)               #æ­¸é‚„ä½¿ç”¨ç©ºé–“
+            self.disk.unregister_describe_configuration(dptr)
+        return dptr
+class FILE:                                                             #ä¸€èˆ¬æª”æ¡ˆ
+    def __init__(self,disk,ptr,encoding='binary',encrypt=None):     #ç£ç¢Ÿï¼Œæª”æ¡ˆé…ç½®FILEä¸­çš„ptr
+        self.disk=disk
+        self.ptr=int(ptr)
+        self.encoding=encoding
+        self.encrypt=encrypt
+        #-----------------------------æ“·å–æª”æ¡ˆé…ç½®è¡¨è³‡è¨Š
+        self.fdsc=self.disk.file_describe_space_configuration       #æª”æ¡ˆé…ç½®è¡¨
+      #  print('æˆ‘çš„ptrç‚º:',ptr)
+        fetch=self.fdsc.read(self.ptr)
+        fetch=fetch.decode('utf-8')
+      #  print('fetchç‚º:',fetch)
+      #  print('fetch[0]',fetch[0])
+      #  tem=fetch[0]
+        assert len(fetch)==128,'fetch error'
+        assert type(fetch)==str,'type error'
+        try:
+            self.type=int(fetch[0])           #å‹æ…‹ï¼Œå 1        #1:æª”æ¡ˆï¼Œ0:è³‡æ–™å¤¾
+            self.build_t=int(fetch[1:11])     #å»ºç«‹æ™‚é–“ï¼Œå 10
+            self.update_t=int(fetch[11:21])   #ä¸Šæ¬¡ä¿®æ”¹æ™‚é–“ï¼Œå 10
+            self.read_t=int(fetch[21:31])     #ä¸Šæ¬¡è®€å–æ™‚é–“ï¼Œå 10
+            self.file_size=int(fetch[31:46])  #æª”æ¡ˆå¤§å°ï¼Œå 15
+            extend_ptr=int(fetch[46:61])            #æ“´å……ä½å€ï¼Œå 15
+            location=fetch[61:128]       #æ‰€å ç©ºé–“ä½å€ï¼Œå 67
+        except Exception as e:
+            print('fetch error:',fetch)
+            raise e
+        self.space_manaager=Space_Serial(self.disk,self.ptr,extend_ptr,location)                #æ‰€ä½”ç©ºé–“åºåˆ—
+        #---------------------------------------------------------------
+        self.seek(0)                                        #è‡ªå·±çš„æŒ‡æ¨™(åœ¨æª”æ¡ˆå…§)
+        self.__set_info('read_t')
+    def set_type(self,ty):
+        self.type=ty
+        self.__set_info('type')
+    def set_size(self,size):
+        self.file_size=size
+        self.__set_info('size')
+    def __set_info(self,state):                                 #è¨­å®šè¨»å†Šè¡¨å…§å®¹
+        if state=='type':s=(0,str(self.type).encode('utf-8'))
+        elif state=='update_t':s=(11,str(int(time())).encode('utf-8'))
+        elif state=='read_t':s=(21,str(int(time())).encode('utf-8'))
+        elif state=='size':s=(31,format_file_size(self.file_size))
+        self.fdsc.write(self.ptr+s[0],s[1])
+    def get_info(self):
+        info=[]
+        info.append(f'æª”æ¡ˆç™»è¨˜ä½å€:{self.ptr}')
+        info.append('æª”æ¡ˆå‹æ…‹:'+['è³‡æ–™å¤¾','æª”æ¡ˆ'][self.type])
+        info.append(f'å»ºç«‹æ™‚é–“:{nowtime(self.build_t)}')
+        info.append(f'ä¸Šæ¬¡ä¿®æ”¹æ™‚é–“:{ nowtime(self.update_t)}')
+        info.append(f'ä¸Šæ¬¡å­˜å–æ™‚é–“:{nowtime(self.read_t)}')
+        info.append(f'æª”æ¡ˆå¤§å°:{self.file_size}')
+        info.append(f'å„²å­˜ç©ºé–“åºåˆ—{self.space_manaager.serial}')
+        return '\n'.join(info)
+    def seek(self,pen,relative=0):
+        self.pen=relative+pen
+    def write(self,byte,pen=None):
+        if pen!=None:self.pen=pen
+        if self.encoding!='binary':
+            byte=byte.encode(self.encoding)
+        n=len(byte)
+        if self.pen+n>=self.file_size:                       #å¦‚æœå¯«å…¥æ™‚è¶…å‡ºå¯ç”¨ç©ºé–“ï¼Œå°±ç”³è«‹
+            self.file_size=self.pen+n
+            self.space_manaager.resize(self.file_size)
+            self.__set_info('size')
+        if self.encrypt!=None:             #å°å¯«å…¥çš„byteé€²è¡ŒåŠ å¯†
+            byte=xor_bytes(byte,self.encrypt,self.pen)
+            assert n==len(byte),'åŠ å¯†éŒ¯èª¤'
+        c=0               #åœ¨serialçš„ä½ç½®
+        k=0               #åœ¨byteä¸­çš„ä½ç½®
+        skip=0     #å‰å¾€penä¹‹å‰æ‰€è·³éçš„å…§å®¹å¤§å°(byte)
+      #  if self.ptr==512:
+      #      print('------------------------------------WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW')
+      #      print('è¦å¯«çš„åºåˆ—ç‚º:',self.space_manaager.serial)
+       #     print(f'{self.ptr}çš„penç‚º',self.pen)
+        while c<len(self.space_manaager.serial):
+            deal=self.space_manaager.serial[c]
+            if skip>=self.pen:                #é–‹å§‹å¯«å…¥ç£ç¢Ÿ
+               # print(self.ptr,'å¯«å…¥!')
+                if type(deal)==int:
+                  #  if self.ptr==512:print('å¾é€™è£¡å¯«1')
+                    self.disk.f.write(deal,byte[k:k+1024])
+                    k+=1024
+                elif type(deal) == tuple:
+                    w_size=deal[1]-deal[0]
+                 #   if self.ptr==512:print('å¾é€™è£¡å¯«2')
+                    self.disk.f.write(deal[0],byte[k:k+w_size])
+                    k+=w_size
+            else:                            #è·³éå…§å®¹
+                if type(deal)==int:
+                    if skip+1024>self.pen:
+                        k=skip+1024-self.pen
+                     #   if self.ptr==512:print('å¾é€™è£¡å¯«3')
+                        self.disk.f.write(deal+1024-k,byte[:k])
+                    skip+=1024
+                elif type(deal)==tuple:
+                    w_size=deal[1]-deal[0]
+                    if skip+w_size>self.pen:
+                        k=w_size-(self.pen-skip)
+                    #    if self.ptr==512:print('å¾é€™è£¡å¯«4')
+                        self.disk.f.write(deal[0]+(self.pen-skip),byte[:k])
+                    skip+=w_size
+            c+=1
+            if k>len(byte)-1:break
+        self.pen += n
+        self.__set_info('update_t')
+        return n
+    def read(self,n=0,pen=None):
+        if n!=0:
+            r_size =min(2 ** 20,n)
+            code = self.__read(r_size, pen)
+            total_byte = [code]
+            n-=r_size
+            while n > 0:
+                r_size = min(2 ** 20, n)
+                code = self.__read(r_size)
+                if len(code)==0:
+                    break
+                total_byte.append(code)
+                n-=r_size
+            return b''.join(total_byte)
+        r_size = 2 ** 20                   # è®€å–å°ºå¯¸ç‚º1MB
+        code =self.__read(r_size,pen)
+        total_byte=[code]
+        while len(code) > 0:
+            code = self.__read(r_size)
+            total_byte.append(code)
+        return b''.join(total_byte)
+    def __read(self,n=0,pen=None):
+        def disk_read(dptr,n):
+            byte.append(self.disk.f.read(dptr,n))
+        if pen != None: self.pen = pen
+        read_pen=self.pen
+        if n==0:
+            n=self.file_size-self.pen
+        else:n=min(n,self.file_size-self.pen)
+        read_size=n
+     #   print('n:',n)
+     #   print('pen:',self.pen)
+        byte=[]
+        c = 0  # åœ¨serialçš„ä½ç½®
+        skip = 0  # å‰å¾€penä¹‹å‰æ‰€è·³éçš„å…§å®¹å¤§å°(byte)
+        while c < len(self.space_manaager.serial):
+            deal = self.space_manaager.serial[c]
+            if skip >= self.pen:                       #è¿”å›byte
+                if type(deal) == int:
+                    r_size=min(1024,n)
+                    #print(1)
+                    disk_read(deal,r_size)
+                    n-=r_size
+                elif type(deal) == tuple:
+                    r_size =min(deal[1] - deal[0],n)
+                   # print(2)
+                    disk_read(deal[0], r_size)
+                    n-=r_size
+            else:                                    # è·³éå…§å®¹
+                if type(deal) == int:
+                    if skip + 1024 > self.pen:
+                        r_size= min(skip + 1024 - self.pen,n)
+                       # print(3)
+                        disk_read(deal + 1024 - r_size,r_size)
+                        n-=r_size
+                    skip += 1024
+                elif type(deal) == tuple:
+                    t_size = deal[1] - deal[0]
+                    if skip + t_size > self.pen:
+                        r_size = min(t_size - (self.pen - skip),n)
+                       # print(4)
+                        disk_read(deal[0] + (self.pen - skip),r_size)
+                        n-=r_size
+                    skip += t_size
+            c += 1
+            if n==0:break
+        self.pen+=read_size
+        self.__set_info('read_t')
+        read_byte=b''.join(byte)
+        if self.encrypt!=None:             #å°è®€å‡ºçš„byteé€²è¡Œè§£å¯†
+            read_byte=xor_bytes(read_byte,self.encrypt,read_pen)
+            assert read_size==len(read_byte),'è§£å¯†éŒ¯èª¤'
+        if self.encoding!='binary':
+            read_byte=read_byte.decode(self.encoding)
+        return read_byte
+    def close(self):
+        self.disk=None
+        self.space_manaager=None
+class VDisk:
+    def __init__(self,disk_path='',password=None):
+        self.debug=False
+        self.disk_path=disk_path
+        self.work_folder='VDisk:'   #ç£ç¢Ÿä¸­çš„ç›¸å°ç›®éŒ„
+        self.fdsc_unit=800
+        self.encrypt=generate_password(password.encode('utf-8'),2**10) if password!=None else None    #1MBçš„åŠ å¯†å¯†é‘°
+        # -----------------------------------------------------------è¼‰å…¥ç£ç¢Ÿ
+        self.__rdisk=RDisk()
+        if self.disk_path == '':           #å‰µå»ºæ–°ç£ç¢Ÿ
+            self.disk_path ='default.disk'
+        if not path.isdir(self.disk_path):
+            print('å‰µå»º:',self.disk_path)
+            self.__create_new_disk()
+        self.__load_disk()
+    def recalculate_size(self):               #ç®—æ³•:ç¸½å¤§å°-å¯ç”³è«‹ç©ºä½=å·²ä½¿ç”¨ç©ºé–“
+        total_size=self.file_space_configuration_serial[-1]          #ç¸½å¤§å°
+        size=0
+        for i in self.file_space_configuration_serial:
+            if type(i)==int:
+                size+=1024
+            elif type(i)==tuple:
+                g_size=i[1]-i[0]
+                size+=g_size
+        #-------------------------------------è¨ˆç®—ç³»çµ±ä½¿ç”¨ç©ºé–“
+        self.fdsc_size=self.file_describe_space_configuration.max_term*128
+       # print(self.fdsc_size)
+        self.fsc_size=self.fsc.file_size
+       # print(self.fsc_size)
+        self.fdc_size=self.fdc.file_size
+       # print(self.fdc_size)
+        self.used_size=total_size-size
+       # print(self.used_size)
+    def get_info(self):
+        self.recalculate_size()
+        info_box=[]
+        info_box.append(f'used_size:{display_size(self.used_size)}')
+        info_box.append(f'access_rights:{self.root.access_rights}')
+        return '\n'.join(info_box)
+    def format(self):
+        self.__create_new_disk()
+        self.__load_disk()
+    def __create_new_disk(self):                   #å‰µå»ºç©ºç£ç¢Ÿ
+        self.__rdisk.mkdir(self.disk_path)
+        f=FWriter(self.disk_path)
+        t=time()
+        f.write(0,file_info(True, t, t, t,0, '---'))                                  # æª”æ¡ˆé…ç½®æª”æ¡ˆfdsc
+        f.write(128,file_info(True, t, t, t, 4,f'{int(self.fdsc_unit*128)}*'))              #æª”æ¡ˆæè¿°ç¬¦è™Ÿç™»è¨˜
+        f.write(256,file_info(True, t, t, t, len(f'{self.fdsc_unit*128+1024*3}*'.encode()), f'{int(self.fdsc_unit*128+1024)}*'))              #æª”æ¡ˆç©ºé–“ç™»è¨˜
+        #--------------------------------------------------
+        f.write(384,file_info(False, t, t, t, 0, f'{int(self.fdsc_unit*128+1024*2)}*'))             #æ ¹è³‡æ–™å¤¾
+        #--------------------------------------------------
+        f.write(self.fdsc_unit*128,b'512*')                 #ä¸‹ä¸€å€‹æª”æ¡ˆç™»è¨˜ä½ç½®
+        f.write(self.fdsc_unit*128+1024,f'{self.fdsc_unit*128+1024*3}*'.encode())
+        f.close()
+    def __load_disk(self):            #è¼‰å…¥ç£ç¢Ÿ
+        self.f=FWriter(self.disk_path)
+        #-----------------------------------------------------------æª”æ¡ˆé…ç½®ç®¡ç†(æª”æ¡ˆé…ç½®ç©ºä½ã€æè¿°ç¬¦è™Ÿç©ºä½ã€æª”æ¡ˆç©ºé–“ç©ºä½)
+        self.file_describe_space_configuration = FDSC(self, 0,unit=self.fdsc_unit)
+        #--------------------
+        self.fdc=FILE(self,128)           #å› ç‚ºå…§å®¹èˆ‡å…¶ä»–ç£ç¢Ÿå·®ä¸å¤šï¼ŒåŠ å¯†å¾Œæœƒè¢«èˆ‡å…¶ä»–ç£ç¢Ÿæ¯”å°è€Œç ´è§£ï¼Œæ•…ç„¡é ˆåŠ å¯†
+        self.fsc=FILE(self,256)           #å› ç‚ºå…§å®¹èˆ‡å…¶ä»–ç£ç¢Ÿå·®ä¸å¤šï¼ŒåŠ å¯†å¾Œæœƒè¢«èˆ‡å…¶ä»–ç£ç¢Ÿæ¯”å°è€Œç ´è§£ï¼Œæ•…ç„¡é ˆåŠ å¯†
+        self.file_describe_configuration_serial=text_to_serial(self.fdc.read(0,0).decode())
+        self.file_space_configuration_serial= text_to_serial(self.fsc.read(0, 0).decode())
+        self.root=FOLDER(self,384,encrypt=self.encrypt)      #å…§å®¹å’Œå…¶ä»–ç£ç¢Ÿä¸åŒï¼Œé ˆåŠ å¯†   #æ ¹è³‡æ–™å¤¾
+        self.save_configuration_lock=0
+        self.recalculate_size()                                           #å·²ä½¿ç”¨ç©ºé–“
+    def register_describe_configuration(self,number=1):                                                         #åœ¨æª”æ¡ˆåˆ—è¡¨è¨»å†Šnumberå€‹æè¿°é…ç½®ä½å€
+        serial=self.file_describe_configuration_serial           #è®€å–ç™»è¨˜è¡¨
+        get=[]
+        max_term = self.file_describe_space_configuration.max_term
+        while len(get)<number:
+            want_use_ptr=serial[0]
+            if len(serial) > 1:
+                del serial[0]
+            elif len(serial) == 1:
+                serial[0] += 128
+            if want_use_ptr>=max_term:
+                extend_ptr=self.apply_space(int(self.fdsc_unit/8),continuous=True)[0][0]         #ç”³è«‹100å€‹é€£çºŒç©ºé–“
+                self.file_describe_space_configuration.extend(extend_ptr)
+                max_term=self.file_describe_space_configuration.max_term
+            elif want_use_ptr not in self.file_describe_space_configuration.dptrs:    #æ­¤ä½ç½®ä¸å¯ç”¨
+                get.append(want_use_ptr)
+        if number==1:return get[0]
+        return get
+    def unregister_describe_configuration(self,ptrs):                                                               #å–æ¶ˆç™»è¨˜ä½å€ï¼Œintæˆ–tupleæˆ–serial
+        serial=self.file_describe_configuration_serial        #è®€å–ç™»è¨˜è¡¨
+        if type(ptrs)==list:
+            self.file_describe_configuration_serial=serial[:-1]+ptrs+[serial[-1]]
+        else:self.file_describe_configuration_serial=serial[:-1]+[ptrs,serial[-1]]
+    def apply_space(self,number,continuous=False):               #ç”³è«‹ä½¿ç”¨ç©ºé–“ï¼Œreturn å¯ç”¨ç©ºé–“æˆ¿è™Ÿ(ä¸²åˆ—)ï¼Œå…±numberå€‹
+        serial =self.file_space_configuration_serial   # è®€å–ç™»è¨˜è¡¨
+        get=[]
+        #print('ç›®å‰çš„ç©ºé–“ç™»è¨˜è¡¨:',serial)
+        #---------------------------------------è™•ç†å‰é¢çš„
+        c=0
+        while c<len(serial)-1 and number>0:
+            deal=serial[c]
+            if type(deal)==int and not continuous:
+                get.append(deal)
+                number-=1
+            elif type(deal)==tuple:
+                total=(deal[1]-deal[0])//1024
+                if total>number:
+                    get.append((deal[0], deal[0] + 1024 * number))
+                    serial[0]=(deal[0]+1024*number,deal[1])
+                    number=0
+                    break                 #æ»¿è¶³äº†ï¼Œè·³å‡ºè¿´åœˆ
+                elif not continuous:
+                    get.append(deal)
+                    number-=total
+            if not continuous:
+                del serial[0]
+            else:c+=1
+        #è‹¥å‰é¢çš„ç©ºé–“ä¸è¶³
+        if number>0:
+            if number==1:
+                get.append(serial[-1])
+            else:
+                get.append((serial[-1],serial[-1]+1024*number))
+            serial[-1]+=1024*number
+       # print('çµ¦ç©ºé–“:',get)
+        return get
+    def release_space(self,abort_serial):             #FILEé‡‹å‡ºä¸ç”¨çš„ç©ºé–“æˆ¿è™Ÿ
+        serial = self.file_space_configuration_serial  # è®€å–ç™»è¨˜è¡¨
+        self.file_space_configuration_serial=serial[:-1]+abort_serial+[serial[-1]]
+    def save_configuration(self):
+        if self.save_configuration_lock==0:
+            self.save_configuration_lock=1
+            file_describe_configuration=self.fdc
+            file_space_configuration=self.fsc
+            #-------------------------------------å…ˆå­˜ç™»è¨˜è¡¨
+            while True:
+                byte=serial_to_text(self.file_describe_configuration_serial).encode()
+                n=len(byte)
+                if n>file_describe_configuration.space_manaager.now_max_size():
+                    need_number=(file_describe_configuration.space_manaager.now_max_size()-n)//1024+1
+                    get=self.apply_space(need_number)
+                    file_describe_configuration.space_manaager.serial+=get
+                    file_describe_configuration.space_manaager.save()
+                else:
+                    # --------------------------------------------------------------------å­˜ç©ºé–“è¡¨
+                    byte2 = serial_to_text(self.file_space_configuration_serial).encode()
+                    n2 = len(byte2)
+                    if n2 > file_space_configuration.space_manaager.now_max_size():
+                        need_number = (file_space_configuration.space_manaager.now_max_size() - n) // 1024 + 1
+                        get = self.apply_space(need_number)
+                        file_space_configuration.space_manaager.serial += get
+                        file_space_configuration.space_manaager.save()
+                    else:
+                        file_describe_configuration.write(byte, 0)
+                        file_space_configuration.write(byte2, 0)
+                        break
+            self.save_configuration_lock=0
+#-----------------------------------------------------------------------------------------------------------------------ä»¥ä¸‹ç‚ºå¯ä¾›å¤–ç•Œä½¿ç”¨å‡½æ•¸
+    def fopen(self,filepath,mode=1,encoding='binary'):           #0:ç„¡æ“ä½œ,1:æ‰¾ä¸åˆ°æª”æ¡ˆå°±å¼·åˆ¶å»ºç«‹
+        if filepath=='':return self.root
+       # print('é–‹å•Ÿ:',filepath)
+        ptr=self.__get_file_ptr(filepath,operate=mode)
+       # print('!!!!!!!!!!!',ptr)
+        if ptr==-1:return ptr
+        file=FILE(self,ptr,encoding=encoding,encrypt=self.encrypt)
+        if file.type==0:    #ä»£è¡¨æ˜¯è³‡æ–™å¤¾
+           # print('return folder')
+            return FOLDER(self,ptr,encrypt=self.encrypt)
+      #  print('return file')
+        return file
+    def __get_file_ptr(self,filepath,operate=0):       #operate 0:ç„¡æ“ä½œ,1:æœªæ‰¾åˆ°å‰‡å»ºç«‹ï¼Œ2:æ‰¾åˆ°å¾Œå¾è³‡æ–™å¤¾ç§»é™¤
+        def listdir(nowfolder,k):
+          #  print('åˆ—å‡ºnowfolderå…§å®¹:',nowfolder.listdir())
+            ptr=nowfolder.get_file_ptr(box[k])
+           # print('å¾—åˆ°çš„ptr:',ptr)
+            if ptr==-1:
+                if operate==1 and k==len(box)-1:
+                   # print('å‰µé€ :',box[k])
+                    ptr=nowfolder.CreatFile(box[k])
+                return ptr
+            if k==len(box)-1:
+                if operate==2:
+                    nowfolder.DeleteFile(box[k])
+                return ptr
+            else:
+               # print('ç¢ºèªlistdir:',ptr)
+                f=FOLDER(self,ptr,encrypt=self.encrypt)
+                if f.type==1:return -1
+                return listdir(f,k+1)
+        box=filepath.replace('\\','/').split('/')
+        file_ptr=listdir(self.root,0)
+        return file_ptr
+    def __relatively_to_absolute(self,filepath):
+        filepath=filepath.replace('\\','/').rstrip('/')
+        if filepath=='VDisk:':
+            filepath+='/'
+        if ':/' not in filepath:                       #çµ•å°è·¯å¾‘
+            filepath=f'{self.work_folder}/{filepath}'
+        k=filepath.index(':/')
+        return filepath[k+2:]
+    def listdir_all(self):
+        file_list,total_size=self.__package_file('',self)
+        return [item[1] for item in file_list]
+    def listdir(self,folder_path='',info=False):                    #åˆ—å‡ºè©²ç›®éŒ„ä¸‹æª”æ¡ˆ
+        folder_path=self.__relatively_to_absolute(folder_path)
+        if folder_path=='':result=self.root.listdir(fptr=info)
+        else:
+            fptr=self.__get_file_ptr(folder_path)
+            if fptr==-1:
+                result=fptr
+            else:
+                folder=FOLDER(self,fptr,encrypt=self.encrypt)
+                result=folder.listdir(fptr=info)
+        if not info:return result
+        box=[]
+        for name,ptr in result:
+            file=FILE(self,ptr,encrypt=self.encrypt)
+            file.name=name
+            box.append(file)
+        return box
+    def mkdir(self,path):
+        path=self.__relatively_to_absolute(path)
+        f=self.fopen(path)
+        if f.file_size>0:return -1            #è‹¥æ˜¯pathä¸åˆæ ¼ï¼Œreturn -1
+        f.set_type(0)
+        return FOLDER(self,f.ptr,encrypt=self.encrypt)
+    def rmdir(self, foldername):
+        self.remove(self.__relatively_to_absolute(foldername))
+    def getcwd(self):
+        return self.work_folder
+    def rename(self, filepath1, filepath2):
+        filepath1=self.__relatively_to_absolute(filepath1)
+        filepath2=self.__relatively_to_absolute(filepath2)
+        #--------------------------------------------
+        filename1=filepath1.split('/')[-1]
+        filename2=filepath2.split('/')[-1]
+        #--------------------------------------------
+        folderpath1=filepath1[:-len(filename1)-1]
+        folder1=self.fopen(folderpath1,mode=0)
+        folderpath2= filepath2[:-len(filename2)-1]
+        folder2=self.fopen(folderpath2,mode=0)
+        #-------------------------------------------
+        if type(folder1)==FOLDER and type(folder2)==FOLDER:
+            folder1.MoveFile_to_AnotherFolder(filename1,filename2,folder2)
+            return True
+        return False
+    def remove(self,filepath):                 #åˆªé™¤è³‡æ–™å¤¾æˆ–æª”æ¡ˆ
+        ptr=self.__get_file_ptr(self.__relatively_to_absolute(filepath),operate=2)
+        return ptr
+    def chdir(self, foldername):
+        foldername=self.__relatively_to_absolute(foldername)
+        if self.isdir(foldername):
+            self.work_folder = foldername.rstrip('/')
+            return
+        raise Exception()
+    def isfile(self, filepath):
+        if filepath=='':return False
+       # print('ç¢ºèª:',self.__relatively_to_absolute(filepath))
+        file=self.fopen(self.__relatively_to_absolute(filepath),mode=0)
+        return type(file)==FILE
+    def isdir(self, folderpath):
+        folderpath=self.__relatively_to_absolute(folderpath)
+        if folderpath=='':#æ ¹ç›®éŒ„
+            return True
+        file = self.fopen(folderpath,mode=0)
+        return type(file) == FOLDER
+    def getsize(self, filepath):
+        file=self.fopen(self.__relatively_to_absolute(filepath),mode=0)
+        return file.file_size
+    def open(self, filepath,mode=None,encoding=None):
+        filepath = self.__relatively_to_absolute(filepath)
+        if encoding==None:
+            if mode in (None,'wb','rb','ab'):
+                encoding='binary'
+            elif mode in ('r','w','a'):
+                encoding='utf-8'
+        return self.fopen(filepath,encoding=encoding)
+    #---------------------------------------------------------------------real,virtualç£ç¢Ÿå…§å®¹äº’æ›
+    def __package_file(self,file_path,disk):
+        def package_file(folderpath):  # åŒ…è£æŒ‡ä»¤
+            size = 0
+            o = disk.listdir(folderpath)
+            if folderpath!='':
+                file_list.append((0,folderpath,folderpath[pf_k:]))
+                folderpath+='/'
+            for i in o:
+                filepath = folderpath + i
+                if disk.isdir(filepath):
+                    size += package_file(filepath)
+                elif disk.isfile(filepath):
+                    file_list.append((1,filepath,filepath[pf_k:]))
+                    size += disk.getsize(filepath)
+            return size
+        file_list = []
+        filename=file_path.split('/')[-1]
+        pf_k=len(file_path[:-len(filename)])
+        if disk.isfile(file_path):
+            return [(1,file_path,file_path[pf_k:])],disk.getsize(file_path)
+        elif disk.isdir(file_path):
+            total_size = package_file(file_path)
+            return file_list,total_size
+    def __move_files(self,disk1,filepath1,disk2,parent_folder='',progress_func=None):
+        if progress_func=='default':
+            progress_func=Default_progress_bar
+        file_list,total_size=self.__package_file(filepath1,disk1)
+        if parent_folder!='':
+            parent_folder=parent_folder.rstrip('/')+'/'
+        now_size=0
+        next_progress=20
+        time_box=[]
+        st=time()
+        for ftype,filepath,filename in file_list:
+            if ftype==0:
+                disk2.mkdir(parent_folder+filename)
+            elif ftype==1:
+              #  print('filepath:',filepath)
+                rf=disk1.open(filepath,'rb')
+               # print('to:',parent_folder+filename)
+                wf=disk2.open(parent_folder+filename,'wb')
+                r_size=2**20                    #å¯«å…¥å°ºå¯¸ç‚º1MB
+                code=rf.read(r_size)
+                while len(code)>0:
+                    wf.write(code)
+                    now_size+=len(code)
+                    code = rf.read(r_size)
+                    if progress_func!=None and now_size//r_size>next_progress:
+                        time_box.append(time()-st)
+                        st=time()
+                        next_progress+=20
+                        average_speed=r_size*20*len(time_box)/sum(time_box)
+                        speed_hint=f'speed:{display_size(average_speed)}/s'
+                        remain_hint=f'remain:{int((total_size-now_size)/average_speed)}s'
+                        progress_func(now_size,total_size,hint=' '*(20-len(speed_hint))+speed_hint+' '*(15-len(remain_hint))+remain_hint)
+                        time_box=time_box[-10:]
+                rf.close()
+                wf.close()
+        if progress_func == 'default':
+            print()
+    def input(self,real_filepath,parent_folder='',progress_func='default'):    #å¾å¤–éƒ¨åŒ¯å…¥æª”æ¡ˆ
+        if progress_func == 'default':
+            print('input:',real_filepath)
+        self.__move_files(self.__rdisk,real_filepath,self,parent_folder,progress_func)
+    def output(self,virtual_filepath,parent_folder='',progress_func='default'):   #å¾å…§éƒ¨åŒ¯å‡ºæª”æ¡ˆåˆ°å¤–éƒ¨
+        if progress_func == 'default':
+            print('output:',virtual_filepath)
+        self.__move_files(self,virtual_filepath,self.__rdisk,parent_folder,progress_func)
+    def close(self):
+        self.f.close()
+if __name__ == '__main__':
+    disk=Disk()
+   # disk.format()
+    t=Terminal(disk)
+    t.mainloop()
+    #f=disk.fopen('new.txt')
+    #f2=disk.fopen('new2.txt')
+#    f.get_info()
+    #byte=open('good2.png','rb').read()
+    #byte2=open('NodeMCU-32S-details-3.jpg','rb').read()
+   # t=time()
+   # disk.mkdir('folder1')
+   # disk.input('folder1/new.png','good2.png')
+   # disk.input('void.txt', 'test.txt')
+    #print('ç•¶å‰å¯ç”¨ç™»è¨˜è¡¨:',disk.file_describe_configuration_serial)
+   # print('ç•¶å‰å¯ç”¨ç©ºé–“è¡¨:', disk.file_space_configuration_serial)
+   # disk.input('new2.jpg','NodeMCU-32S-details-3.jpg')
+   # #print('ç•¶å‰å¯ç”¨ç™»è¨˜è¡¨:', disk.file_describe_configuration_serial)
+   # print('ç•¶å‰å¯ç”¨ç©ºé–“è¡¨:', disk.file_space_configuration_serial)
+   # disk.input('folder1\\new2.jpg', 'NodeMCU-32S-details-3.jpg')
+   # disk.remove('new2.jpg')
+    #print('ç•¶å‰å¯ç”¨ç™»è¨˜è¡¨:', disk.file_describe_configuration_serial)
+  #  print('ç•¶å‰å¯ç”¨ç©ºé–“è¡¨:', disk.file_space_configuration_serial)
+   # for i in range(6):
+    #    print('--------------------------------')
+   #     disk.input(f'new{i}.png', 'good2.png')
+   # print('ç•¶å‰å¯ç”¨ç©ºé–“è¡¨:', disk.file_space_configuration_serial)
+   # print(disk.listdir('1'))
+   # print(disk.listdir('folder2'))
+    #disk.output('folder1/new.png','new.png')
+    #print(time()-t)
+    #disk.input('void.txt','test.txt')
+    #disk.output('void.txt','test2.txt')
+    #disk.input('new2.jpg','NodeMCU-32S-details-3.jpg')
+    #disk.output('new2.jpg','new100.png')
+    #t=time()
+   # disk.input('Apple.mp4','ss.mp4')
+    #disk.output('Apple.mp4','banana.mp4')
+    #print(time()-t)2353*19*writer.pyfrom threading import Lock
+from os import mkdir,listdir
+from os.path import isfile,isdir
+
+GB=2**30
+
+class FWriter:
+    def __init__(self,disk_folder_path,slice_size=3*GB):   #åˆ‡ç‰‡å¤§å°ç‚º3GB
+        disk_folder_path=disk_folder_path.replace('\\','/').rstrip('/')
+        self.__disk_folder_path=disk_folder_path
+        if not isdir(disk_folder_path):
+            mkdir(disk_folder_path)
+        self.__fs=[]
+        self.__expand_disk(0)      #è¼‰å…¥ç¬¬ä¸€å¯å¯«é †åºæª”æ¡ˆ
+        k=1
+        while isfile(f'{disk_folder_path}/{k}.dk'):
+            self.__fs.append(open(f'{disk_folder_path}/{k}.dk','rb+'))
+            k+=1
+        self.__slice_size=slice_size
+        self.__lock=Lock()
+    def __expand_disk(self,max_order):
+        k=len(self.__fs)
+        while k<=max_order:
+            dk_name=f'{self.__disk_folder_path}/{k}.dk'
+            if not isfile(dk_name):
+                open(dk_name, 'wb').close()
+            self.__fs.append(open(dk_name,'rb+'))
+            k+=1
+    def write(self,dptr,content):
+        self.__lock.acquire()
+        f_order=dptr//self.__slice_size
+        wptr=dptr%self.__slice_size
+        write_len=0
+        content_len=len(content)
+        result_n=0
+        while write_len<content_len:
+            if f_order>=len(self.__fs):
+                self.__expand_disk(f_order)
+            f=self.__fs[f_order]
+            f.seek(wptr, 0)
+            slice_code=content[write_len:write_len+self.__slice_size-wptr]
+            wptr=0
+            result_n += f.write(slice_code)
+            write_len += len(slice_code)
+            f_order+=1
+        self.__lock.release()
+        return result_n
+    def read(self,dptr,num):
+        self.__lock.acquire()
+        f_order = dptr // self.__slice_size
+        rptr = dptr % self.__slice_size
+        content_box=[]
+        while num>0:
+            if f_order >= len(self.__fs):    #ç„¡å…§å®¹å¯è®€
+                break
+            f = self.__fs[f_order]
+            f.seek(rptr, 0)
+            slice_content=f.read(num)
+            rptr=0
+            content_box.append(slice_content)
+            num-= len(slice_content)
+            f_order += 1
+        self.__lock.release()
+        return b''.join(content_box)
+    def close(self):
+        for f in self.__fs:
+            f.close()148*111*__init__.pyfrom vm.virtual_disk import VDisk
+from vm.real_disk import RDisk
+from vm.terminal import Terminal
+from vm.tool import get_host_ip
+39660*011*__pycache__1588*120*crypt.cpython-37.pycB
+    ƒeÉ  ã               @   sp   ddd„Z dd„ ZedkrldZdZeedƒZe eed ƒZeeeƒeeƒkƒ d	Z	e ee	d
+… ee	ƒZ
+ee
+ƒ d
+S )é    c       
+      C   s€   t | ƒ}t| ƒ}t |ƒ}t|ƒ}||| d … }|t|ƒ | }||| 7 }||d |t|ƒ … 7 }dd„ t||ƒD ƒ}	t|	ƒS )Nc             S   s   g | ]\}}||A ‘qS © r   )Ú.0ÚaÚbr   r   ú(C:\Users\allen\Desktop\py\VM\vm\crypt.pyú
+<listcomp>
+   s    zxor_bytes.<locals>.<listcomp>)ÚlistÚlenÚzipÚbytes)
+ÚcontentÚpasswordZstart_pZcontent_bytesZcontent_lengthÚpassword_bytesZp_lenZpassword_boxZ
+link_timesZ	void_byter   r   r   Ú	xor_bytes   s    r   c             C   s   dd„ }t | ƒdkrd} xt | ƒdk r6| t| dƒ7 } qW t| ƒ}x$tt |ƒƒD ]}||  |7  < qNW ||ƒ}xt |ƒ|k r†||ƒ}qpW t|ƒS )Nc             S   sb   g }xXt dƒD ]L}xFt t| ƒd | ƒD ].}| | | | |d |  | |  A d ¡ q(W qW |S )Né   é   é   )Úranger	   Úappend)r   Zvoid_passwordr   Úir   r   r   Úgenerate   s
+    2z#generate_password.<locals>.generater   s   123é   s   azbycx)r	   r   r   r   r   )r   Úlengthr   r   r   r   r   r   Úgenerate_password   s    r   Ú__main__sQ   hello world,this is my first program. In this project,I make an encrypt function.s   alléd   é   N)r   )r   r   Ú__name__Ústringr   Z	password2ÚencryptÚprintr	   ÚkZdecryptr   r   r   r   Ú<module>   s   
+
+2808*124*real_disk.cpython-37.pycB
+    ¼1e  ã               @   sR   d dl mZmZmZmZmZmZmZmZ d dl	m
+Z
+mZmZmZ G dd„ dƒZdS )é    )ÚlistdirÚmkdirÚrmdirÚgetcwdÚrenameÚremoveÚchdirÚpopen)ÚisdirÚisfileÚgetsizeÚisabsc               @   s†   e Zd Zdd„ Zdd„ Zd dd„Zdd	„ Zd
+d„ Zdd„ Zdd„ Z	dd„ Z
+dd„ Zdd„ Zdd„ Zdd„ Zdd„ Zdd„ Zdd„ ZdS )!ÚRDiskc             C   s   t ƒ  dd¡| _d S )Nú\ú/)r   ÚreplaceÚwork_folder)Úself© r   ú,C:\Users\allen\Desktop\py\VM\vm\real_disk.pyÚ__init__   s    zRDisk.__init__c             C   s   t |ƒr|S | j› d|› S )Nr   )r   r   )r   Úfilepathr   r   r   Ú__relatively_to_absolute   s    zRDisk.__relatively_to_absoluteNc             C   s2   |d kr| j }|  |¡}|d kr*t| j ƒS t|ƒS )N)r   Ú_RDisk__relatively_to_absoluter   )r   Ú
+foldernamer   r   r   r      s    
+
+zRDisk.listdirc             C   s   |   |¡}t|ƒst|ƒ d S )N)r   r
+   r   )r   r   Ú
+folderpathr   r   r   r      s    
+zRDisk.mkdirc             C   s   t |  |¡ƒ d S )N)r   r   )r   r   r   r   r   r      s    zRDisk.rmdirc             C   s   | j S )N)r   )r   r   r   r   r      s    zRDisk.getcwdc             C   s   t |  |¡|  |¡ƒ d S )N)r   r   )r   Ú	filename1Ú	filename2r   r   r   r      s    zRDisk.renamec             C   s   t |  |¡ƒ d S )N)r   r   )r   r   r   r   r   r      s    zRDisk.removec             C   s&   t |ƒr"|  | dd¡ d¡¡| _d S )Nr   r   )r
+   r   r   Úrstripr   )r   r   r   r   r   r      s    zRDisk.chdirc             C   s   t |  |¡ƒS )N)r   r   )r   r   r   r   r   r   !   s    zRDisk.isfilec             C   s   t |  |¡ƒS )N)r
+   r   )r   r   r   r   r   r
+   #   s    zRDisk.isdirc             C   s   t |  |¡ƒS )N)r   r   )r   r   r   r   r   r   %   s    zRDisk.getsizec             O   s   |   |¡}t|f||S )N)r   Úopen)r   r   ÚargsÚkwargsr   r   r   r   '   s    
+z
+RDisk.openc             C   s$   t ƒ }t| jƒ t|ƒ}t|ƒ |S )N)r   r   r   r	   )r   ZcommandZmypathÚresultr   r   r   r	   *   s
+    
+zRDisk.popenc             C   s   d S )Nr   )r   r   r   r   Úclose0   s    zRDisk.close)N)Ú__name__Ú
+__module__Ú__qualname__r   r   r   r   r   r   r   r   r   r   r
+   r   r   r	   r#   r   r   r   r   r      s   
+r   N)Úosr   r   r   r   r   r   r   r	   Zos.pathr
+   r   r   r   r   r   r   r   r   Ú<module>   s   (3924*123*terminal.cpython-37.pycB
+    r~e  ã               @   s"   d dl m Z  dZG dd„ dƒZdS )é    )Útimeu{  
+çµ‚ç«¯æ©ŸæŒ‡ä»¤:
+
+help                               æŸ¥çœ‹å¯ç”¨æŒ‡ä»¤
+system                             æŸ¥çœ‹ç³»çµ±è³‡è¨Š
+
+input    filepath                  å°‡filepathå­˜å…¥è™›æ“¬ç£ç¢Ÿ
+output   v_filename r_filename     å°‡v_filenameå¾è™›æ“¬ç£ç¢ŸåŒ¯å‡ºï¼Œä¸¦å‘½åç‚ºr_filename
+mkdir    foldername                å‰µå»ºfoldernameè³‡æ–™å¤¾
+cd       foldername                é€²å…¥è³‡æ–™å¤¾
+cd..                               é›¢é–‹è³‡æ–™å¤¾
+dir      foldername                æŸ¥çœ‹foldernameåº•ä¸‹æ‰€æœ‰æª”æ¡ˆè³‡æ–™
+info     filename                  æŸ¥çœ‹filenameè³‡è¨Š
+remove   filename                  ç§»é™¤filename
+
+
+c               @   s0   e Zd Zddd„Zddd„Zdd„ Zd	d
+„ ZdS )ÚTerminalr   c             C   s.   || _ d| _d| _g | _g | _d| _|| _d S )Nz	/\:*?"<>|Ú r   )ÚdiskÚbanlistÚ
+folderpathÚlog_textÚoutputÚerrorÚmode)Úselfr   r   © r   ú+C:\Users\allen\Desktop\py\VM\vm\terminal.pyÚ__init__   s    zTerminal.__init__é   c             C   sH   | j  tƒ ||f¡ | jdkr(t|ƒ n| jdkr>| j |¡ || _d S )Nr   r   )r   Úappendr   r   Úprintr	   r
+   )r   Úmsgr
+   r   r   r   Úlog   s    
+ 
+
+ zTerminal.logc       
+      C   sò  | j  tƒ d|f¡ | d¡}|d dkr:ttdd n–|d dkrŠt ¡  |  dt	tj
+ƒ› ¡ |  dt	tjtj tj ƒ› ¡ nF|d d	krÄ| j d
+¡d }| jd t|ƒ d … | _nt|ƒdkrú|d dkrú|  d | j | j¡¡¡ nÖt|ƒdkrĞ|d }d}t|ƒdkr0|  d¡ d}xD| jD ]:}||kr8|dkrVd}n|  d|› d|› ¡ d}q8W |dkr†|}n | jdkr˜|}n| jd
+ | }td|ƒ |dk rĞ| jj|dd}|d dkr|dkr|jdkrú|  d¡ n
+|  d¡ n| j |¡ |d dkrL|dkr>|jdkr>|| _n
+|  d¡ n„|d dkr˜|dkrŠ|jdkrŠ|  d | j |¡¡¡ n
+|  d¡ n8|d dkrÎ|dkrÀ|  | ¡ ¡ n
+|  d¡ n|d dkr |dkrô| j |¡ n
+|  d¡ nĞ|d dkrrt |d ¡s.t |d ¡r\| jj| j|d td}	|	dkrp|  d ¡ n|  |d › d!¡ n^t|ƒdkrĞ|d d"krĞt |d ¡rª|  d#¡ n&| j ||d ¡}	|	dkrĞ|  d$¡ tdtj› d%| j› d&dd d S )'Nr   ú Úhelpr   )ÚendÚsystemu   å·²ä½¿ç”¨ç©ºé–“:u   ç³»çµ±æ‰€å ç©ºé–“:zcd..ú/éÿÿÿÿr   ÚdirÚ
+u   æª”æ¡ˆåç¨±ä¸å¯ç‚ºç©º!é   z/\u   æª”æ¡ˆåç¨±"u    "ä¸­åŒ…å«ä¸å¯ä½¿ç”¨çš„å­—å…ƒ:zfpath:)r   Úmkdiru   è©²è³‡æ–™å¤¾å·²å­˜åœ¨u   æ­¤ç‚ºå·²å­˜åœ¨çš„æª”æ¡ˆåç¨±Zcdu   è©²è³‡æ–™å¤¾ä¸å­˜åœ¨!Úinfou   è©²æª”æ¡ˆä¸å­˜åœ¨!ÚremoveÚinput)Úprogress_funcu   ç„¡æ•ˆçš„è™›æ“¬è·¯å¾‘u
+   ä¸å­˜åœ¨!r	   u   ç„¡æ³•è¦†è“‹ç¾æœ‰çš„æª”æ¡ˆ!u   è©²è™›æ“¬æª”æ¡ˆä¸å­˜åœ¨ú#z>>)r   r   r   Úsplitr   Út_cmdr   Úrecalculate_sizer   ÚesizeÚ	used_sizeÚ	fdsc_sizeÚfdc_sizeÚfsc_sizer   ÚlenÚjoinÚlistdirr   ÚfopenÚtyper   Úget_infor    ÚpathÚisfileÚisdirr!   Úprogress_barr	   Ú	disk_path)
+r   ÚstringÚcmdÚfolderÚfilenameZ
+check_codeÚiZfpathÚfileZcheckr   r   r   Úoperate"   sŠ    
+ &
+
+
+
+
+
+
+
+   
+ 
+  
+ 
+ 
+zTerminal.operatec             C   sŒ   |   d¡ x|tƒ }|dkrP q|dkr8| j ¡  d| _q| d¡}|d dkrzt| j|d ƒ}|jdkr„t| 	dd¡ƒ q|   |¡ qW d S )	Nr   ÚexitÚformatr   r   r   Úptrr   )
+r=   r!   r   r?   r   r$   ÚFILEr0   r   Úread)r   ÚaÚbr<   r   r   r   Úmainlooph   s    
+ 
+
+
+zTerminal.mainloopN)r   )r   )Ú__name__Ú
+__module__Ú__qualname__r   r   r=   rE   r   r   r   r   r      s   
+
+Fr   N)r   r%   r   r   r   r   r   Ú<module>   s   1130*119*tool.cpython-37.pycB
+    ÒÚƒeÛ  ã               @   s>   d dl m Z mZmZmZmZmZ dd„ Zddd„Zdd	„ Zd
+S )é    )ÚsocketÚAF_INETÚ
+SOCK_DGRAMÚtimeoutÚgethostnameÚgethostbynamec             C   sF   x@t dƒD ]4}dd| d  }| |kr
+t| | dƒ› d|  S q
+W d S )Né   é   é   é
+   )ÚGBÚMBÚKBZbit)ÚrangeÚround)ÚsizeÚiÚbase© r   ú'C:\Users\allen\Desktop\py\VM\vm\tool.pyÚdisplay_size   s    r   é2   Ú c             C   sR   t ||  | ƒ}tdd|  d||   dtd|  | dƒ› d|›  dd	 d S )
+Nz
+process:[u   â–‡ú z]  éd   r	   z%  z  )Úend)ÚintÚprintr   )ZnowÚtotalÚwidthÚhintZprocessr   r   r   ÚDefault_progress_bar   s    r!   c              C   sZ   t ttƒ} |  d¡ y|  d¡ |  ¡ d }W n tk
+rL   ttƒ ƒ}Y nX |  	¡  |S )Nr	   )z8.8.8.8éP   r   )
+r   r   r   Z
+settimeoutZconnectZgetsocknamer   r   r   Úclose)ÚsZipr   r   r   Úget_host_ip
+   s    
+
+
+r%   N)r   r   )	r   r   r   r   r   r   r   r!   r%   r   r   r   r   Ú<module>   s    
+27463*127*virtual_disk.cpython-37.pycB
+    0Ù‘eï¤  ã               @   s  d dl mZmZ d dlmZmZmZ d dlmZmZ d dl	m
+Z
+ d dlmZmZ d dlmZ d(dd	„Zd
+d„ Zdd„ Zdd„ Zdd„ Zdd„ Zdd„ Zdd„ Zdd„ Zdd„ ZG dd„ dƒZG dd„ dƒZG d d!„ d!ƒZG d"d#„ d#ƒZG d$d%„ d%ƒZed&kre ƒ Z!e"e!ƒZ#e# $¡  d'S ))é    )ÚpathÚlistdir)ÚtimeÚ	localtimeÚsleep)Ú	xor_bytesÚgenerate_password)ÚRDisk)Údisplay_sizeÚDefault_progress_bar)ÚFWriteré2   c             C   sL   t ||  | ƒ}tdd|  d||   dt| ƒ› dt|ƒ›  dd d S )Nz[ú#ú z] ú/Ú )Úend)ÚintÚprintÚesize)Únow_sizeÚ
+total_sizeÚsizeÚi© r   ú/C:\Users\allen\Desktop\py\VM\vm\virtual_disk.pyÚprogress_bar   s    r   c             C   s:   t | ƒ}|j› d|j› d|j› d|j› d|j› d|j› S )Nr   r   ú:)r   Ztm_yearZtm_monZtm_mdayZtm_hourZtm_minZtm_sec)ÚtÚntr   r   r   Únowtime   s    r    c             C   sN   d}xDt t|ƒƒD ]4}t| dd|   dƒ}|dk r|› d|| › S qW d S )N)ÚBZKBZMBZGBZTBZPBZEBé   é
+   i   r   )ÚrangeÚlenÚround)r   Z	size_unitr   Zcsizer   r   r   r      s
+    r   c             C   s¦   |   d¡d }| d t|ƒ d … }d}x|D ]}| |d¡}q.W tƒ }|› d|› |krh|› d|› S d}x$|› d|› d|› |kr|d7 }qnW |› d|› d|› S )NÚ.éÿÿÿÿé   z	/\:*?"<>|Ú_)Úsplitr%   Úreplacer   )ÚfilenameÚformatÚnameÚbanlistr   ÚoÚcr   r   r   Úlegel_filename   s    
+ r3   c             C   s0   t t| ƒƒ d¡}d d¡}|dt|ƒ  | S )Nzutf-8Ú0é   )Ústrr   Úencoder%   )r   ÚsÚar   r   r   Úformat_file_size#   s    
+r:   c       	      C   sP   dd„ }dd„ }dd„ }|| ƒ||ƒ ||ƒ ||ƒ t |ƒ t dƒ ||ƒ S )Nc             S   s   | rdnd  d¡S )NÚ1r4   zutf-8)r7   )Úisfiler   r   r   Úformat_isfile(   s    z file_info.<locals>.format_isfilec             S   s8   t t| ƒƒ d¡}d d¡}|dt|ƒ  |dd …  S )Nzutf-8r4   r#   iöÿÿÿ)r6   r   r7   r%   )r   Únr9   r   r   r   Úformat_time*   s    
+zfile_info.<locals>.format_timec             S   s(   d  d¡}|   d¡}||dt|ƒ   S )Nr4   zutf-8éC   )r7   r%   )Úlocationr9   Zlocation_byter   r   r   Úformat_file_location.   s    
+
+z'file_info.<locals>.format_file_locationr   )r:   )	r<   Úbuild_tZlast_update_tZlast_read_tÚ	file_sizeZfile_locationr=   r?   rB   r   r   r   Ú	file_info'   s    rE   c             C   sn   |   d¡}g }xZ| d |…  d¡D ]D}d|krX| d¡}| t|d ƒt|d ƒf¡ q"| t|ƒ¡ q"W |S )NÚ*ú,ú-r   r)   )Úindexr+   Úappendr   )ÚtextÚkÚboxr   r2   r   r   r   Útext_to_serial8   s    
+
+ rN   c             C   sf   d}xP| D ]H}t |ƒtkr*||› d7 }q
+t |ƒtkr
+||d › d|d › d7 }q
+W |d d… d S )Nr   rG   r   rH   r)   r(   rF   )Útyper   Útuple)ÚserialrK   r   r   r   r   Úserial_to_textB   s    
+ rR   c             C   s   i }g g  }}xR| D ]J}t |ƒtkr8|||< | |¡ qt |ƒtkr|||d < | |d ¡ qW | ¡  x|D ]}| || ¡ qpW t|ƒS )Nr   )rO   r   rJ   rP   ÚsortÚcombine_serial)rQ   ÚgetrM   Znboxr   r   r   r   Úsort_serialJ   s    
+
+
+rV   c             C   s¼   ddg}g }d}xŠ|t | ƒk ršt| | ƒtkrD| | | | d f}n| | }|d |d krj|d |d< n&| |d |d f¡ |d |d g}|d7 }qW | |d |d f¡ |d= |S )Nr   Znoi   r)   )r%   rO   r   rJ   )rQ   ZtemÚresultr2   Údealr   r   r   rT   X   s     rT   c               @   s,   e Zd Zdd„ Zdd„ Zdd„ Zdd„ Zd	S )
+ÚSpace_Serialc             C   s   || _ || _|g| _xl|dkr€|jr.td|ƒ | jj |¡ d¡}|jrRtd|ƒ t|d d… ƒ}| j 	|¡ ||dd… 7 }qW t
+|ƒ| _d S )Nr   zextend_ptr:zutf-8zfetch:r5   é€   )ÚptrÚdiskÚptrsÚdebugr   Ú!file_describe_space_configurationÚreadÚdecoder   rJ   rN   rQ   )Úselfr\   r[   Ú
+extend_ptrrA   Úfetchr   r   r   Ú__init__i   s    
+
+
+zSpace_Serial.__init__c             C   sZ   d}xH| j D ]>}t|ƒtkr&|d7 }qt|ƒtkr||d |d  d 7 }qW t|d ƒS )Nr   r)   i   )rQ   rO   r   rP   )rb   Útotalr   r   r   r   Únow_max_sizez   s    
+zSpace_Serial.now_max_sizec             C   s€  |   ¡ }||kr>|| d d }| j |¡}|  j|7  _n6||d k rt|d d }g }d}xä|dkrDt| j| ƒtkrˆ|d8 }n²t| j| ƒtkr:| j| d | j| d g}x8|dkrğ|d |d  dkrğ|d8 }|d  d7  < qºW |d |d  dkr:| j| d |d f| j|< | |d |d f¡ |d7 }qbW || j|d … 7 }| jd |… | _| j |¡ |  	¡  d S )Ni   r)   r   )
+rg   r\   Úapply_spacerQ   rO   r   rP   rJ   Úrelease_spaceÚsave)rb   r   rg   ZneedZapply_serialÚabort_serialr2   rX   r   r   r   Úresize‚   s2    
+zSpace_Serial.resizec             C   sj  t | jƒ| _t| jƒ d¡}t|ƒ}| jg| j }d}xè|dkr|dkrT|d8 }n|d8 }|dkrrd||d < n,||d  dkr| j ¡ ||d < | 	d¡ |dkrØ| jj
+ || d t||d  ƒ|d d…  ¡ n<| jj
+ || t||d  ƒ||d d |d d …  ¡ |d7 }q8W |d t|ƒk rJ| j ||d d… ¡ |d|d … | _| j ¡  d S )Nzutf-8r   r@   éq   r)   é.   r(   )rT   rQ   rR   r7   r%   r[   r]   r\   Úregister_describe_configurationrJ   r_   Úwriter:   Ú!unregister_describe_configurationÚsave_configuration)rb   Úbyter>   r]   r2   r   r   r   rj      s,     
+
+2<zSpace_Serial.saveN)Ú__name__Ú
+__module__Ú__qualname__re   rg   rl   rj   r   r   r   r   rY   h   s   rY   c               @   s4   e Zd Zdd„ Zdd„ Zdd„ Zdd„ Zd	d
+„ ZdS )ÚFDSCc             C   sœ   || _ || _| j j |d¡ d¡}|t|dd… ƒg| _xT| jd dkrŒ| j j | jd d¡}| j t| j j | jd d d¡ d¡ƒ¡ q:W |  ¡ | _	d S )NrZ   zutf-8rn   é=   r(   r   r5   )
+r\   ÚunitÚfr`   ra   r   ÚdptrsrJ   Ú_FDSC__get_max_termÚmax_term)rb   r\   r[   ry   rd   r   r   r   re   »   s    0zFDSC.__init__c             C   s   t | jƒd | j S )Nr)   )r%   r{   ry   )rb   r   r   r   Z__get_max_termÄ   s    zFDSC.__get_max_termc             C   sl   || j d< | jj | j d d t| j d ƒ¡ | j  d¡ | jj | j d d t| j d ƒ¡ |  ¡ | _d S )Nr(   éşÿÿÿrn   r   )r{   r\   rz   rp   r:   rJ   r|   r}   )rb   r[   r   r   r   ÚextendÆ   s
+    
+$$zFDSC.extendc             C   sp   || j krt|ƒ tdƒ‚|d }|| j }|| j|  }||d d  }| j | |d  | }| jj ||¡S )Nu   æ­¤ä½ç½®è¢«å ç”¨rZ   )r{   r   Ú	Exceptionry   r\   rz   rp   )rb   r[   ÚcontentÚorderÚpageÚoffsetZoffset2Údptrr   r   r   rp   Ò   s    
+
+z
+FDSC.writec             C   sj   |d }|| j  }|| j |  }| j| |d  }| jjrZtd| jƒ td|ƒ td|ƒ | jj |d¡S )NrZ   z
+self.dptr:zpage:zdptr:)ry   r{   r\   r^   r   rz   r`   )rb   r[   r‚   rƒ   r„   r…   r   r   r   r`   İ   s    
+
+
+z	FDSC.readN)rt   ru   rv   re   r|   r   rp   r`   r   r   r   r   rw   º   s
+   	rw   c               @   sr   e Zd Zddd„Zdd„ Zdd„ Zdd	„ Zd
+d„ Zdd„ Zddd„Z	dd„ Z
+dd„ Zdd„ Zddd„Zdd„ ZdS )ÚFOLDERNc             C   sV   || _ || _|| _t| j | j| jd| _| jj| _| jj| _g | _|  ¡  |  	¡  d S )N)Úencrypt)
+r\   r[   r‡   ÚFILEÚfilerD   rO   rM   Ú_FOLDER__load_contentÚreload)rb   r\   r[   r‡   r   r   r   re   è   s    
+
+zFOLDER.__init__c             C   s   | j  ¡  d S )N)r‰   Úget_info)rb   r   r   r   rŒ   ò   s    zFOLDER.get_infoc             C   s   | j  |¡ || _d S )N)r‰   Úset_typerO   )rb   Útyr   r   r   r   ô   s    zFOLDER.set_typec             C   sT   | j  dd¡}y | d¡| _d| _|  d¡ W n  tk
+rN   d| _d| _Y nX d S )Nr   zutf-8Tr   F)r‰   r`   ra   r   Úaccess_rightsr   ÚUnicodeDecodeError)rb   r   r   r   r   Z__load_content÷   s    zFOLDER.__load_contentc             C   sd   | j  d¡d  d¡dd … }g | _x:tt|ƒƒD ]*}||  d¡\}}| j |t|ƒg¡ q2W d S )Nz|**r   ú|r)   rF   )r   r+   rM   r$   r%   rJ   r   )rb   rM   r   r/   r[   r   r   r   r‹     s
+    zFOLDER.reloadc             C   sÚ   | j rÎg }x2| jD ](\}}| d|› d d¡t|ƒ ¡ qW | d d¡¡ d |¡}| jdkrx| j d¡ | jj| _| j 	t
+|ƒ¡ | j |d¡ | d¡}|  ¡  || jkrÖt|ƒ t| jƒ tdƒ‚ntd	ƒ‚d S )
+Nr‘   rF   zutf-8z|**ó    r)   r   Ústopu   folderå„²å­˜å¤±æ•—)r   rM   rJ   r7   r:   ÚjoinrO   r‰   r   Úset_sizer%   rp   ra   rŠ   r   r   r€   )rb   rM   r/   r[   rs   r   r   r   r   rj     s$    $
+
+
+
+
+
+
+zFOLDER.saveTc             C   sF   t | jƒdkr|  ¡  |s@g }x| jD ]}| |d ¡ q&W |S | jS )Nr   )r%   rM   r‹   rJ   )rb   ÚfptrrM   r   r   r   r   r     s     zFOLDER.listdirc             C   sV   y@| j  d|› d¡}| j  d|¡}t| j |d |d … ƒ}W n   d}Y nX |S )Nr‘   rF   r)   é   r(   )r   rI   r   )rb   r-   ZnkZpkr[   r   r   r   Úget_file_ptr'  s     
+zFOLDER.get_file_ptrc             C   s   | j s
+dS d}x|D ]}| |d¡}qW |  ¡  | j d¡}t| j d¡ƒ}tƒ }td|||d|ƒ}| j	j
+ ||¡ | j ||g¡ |  ¡  |S )Nr(   z	/\:*?"<>|r*   r)   Tr   )r   r,   r‹   r\   ro   rR   rh   r   rE   r‰   Úfdscrp   rM   rJ   rj   )rb   r-   r0   r   Z	login_ptrZspace_serialr   Z
+login_infor   r   r   Ú	CreatFile1  s     
+zFOLDER.CreatFilec             C   s$   x| j D ]}|d |kr|S qW dS )Nr   F)rM   )rb   r-   r   r   r   r   Úis_existC  s    zFOLDER.is_existc             C   s˜   |   ¡  |  |¡}|s"tdƒ dS | j|jkr8||d< nP|  ¡  | |¡}|rh|s^tdƒ dS | |¡ | j |¡ |j |¡ | ¡  |  ¡  |d S )Nu   èµ·å§‹åœ°æª”æ¡ˆä¸å­˜åœ¨r(   r   u   ç›®çš„åœ°æª”æ¡ˆåç¨±å·²å­˜åœ¨r)   )	r‹   r›   r   r[   Ú
+DeleteFilerM   ÚremoverJ   rj   )rb   Ú	filename1Ú	filename2ZanotherfolderZ	overwriteZ
+file1_infoZ
+file2_infor   r   r   ÚMoveFile_to_AnotherFolderH  s&    
+
+
+
+z FOLDER.MoveFile_to_AnotherFolderc             C   sz   |   ¡  d}x.| jD ]$}|d |kr|d }| j |¡ qW |  ¡  |dkrvt| j|| jd}|j d¡ | j 	|¡ |S )Nr(   r   r)   )r‡   )
+r‹   rM   r   rj   rˆ   r\   r‡   Úspace_manaagerrl   rq   )rb   r/   r…   r   rz   r   r   r   rœ   ]  s    zFOLDER.DeleteFile)N)T)T)rt   ru   rv   re   rŒ   r   rŠ   r‹   rj   r   r˜   rš   r›   r    rœ   r   r   r   r   r†   ç   s   
+
+
+
+
+
+r†   c               @   sf   e Zd Zddd„Zdd„ Zdd„ Zd	d
+„ Zdd„ Zddd„Zddd„Z	ddd„Z
+ddd„Zdd„ ZdS )rˆ   ÚbinaryNc       	   
+   C   s<  || _ t|ƒ| _|| _|| _| j j| _| j | j¡}| d¡}t	|ƒdksRt
+dƒ‚t|ƒtksft
+dƒ‚yvt|d ƒ| _t|dd… ƒ| _t|dd… ƒ| _t|dd	… ƒ| _t|d	d
+… ƒ| _t|d
+d… ƒ}|dd… }W n2 tk
+r } ztd|ƒ |‚W d d }~X Y nX t| j | j||ƒ| _|  d¡ |  d¡ d S )Nzutf-8rZ   zfetch errorz
+type errorr   r)   é   é   é   rn   rx   zfetch error:Úread_t)r\   r   r[   Úencodingr‡   r_   r™   r`   ra   r%   ÚAssertionErrorrO   r6   rC   Úupdate_tr¦   rD   r€   r   rY   r¡   ÚseekÚ_FILE__set_info)	rb   r\   r[   r§   r‡   rd   rc   rA   Úer   r   r   re   l  s.    
+
+
+
+
+zFILE.__init__c             C   s   || _ |  d¡ d S )NrO   )rO   r«   )rb   r   r   r   r   r   Š  s    zFILE.set_typec             C   s   || _ |  d¡ d S )Nr   )rD   r«   )rb   r   r   r   r   r•     s    zFILE.set_sizec             C   s˜   |dkrdt | jƒ d¡f}nZ|dkr@dt ttƒ ƒƒ d¡f}n8|dkrbdt ttƒ ƒƒ d¡f}n|dkrxd	t| jƒf}| j | j	|d  |d
+ ¡ d S )NrO   r   zutf-8r©   r£   r¦   r¤   r   r¥   r)   )
+r6   rO   r7   r   r   r:   rD   r™   rp   r[   )rb   Ústater8   r   r   r   Z
+__set_info  s        zFILE.__set_infoc             C   s    g }|  d| j› ¡ |  dddg| j  ¡ |  dt| jƒ› ¡ |  dt| jƒ› ¡ |  dt| jƒ› ¡ |  d| j› ¡ |  d	| jj	› ¡ d
+ 
+|¡S )Nu   æª”æ¡ˆç™»è¨˜ä½å€:u   æª”æ¡ˆå‹æ…‹:u	   è³‡æ–™å¤¾u   æª”æ¡ˆu   å»ºç«‹æ™‚é–“:u   ä¸Šæ¬¡ä¿®æ”¹æ™‚é–“:u   ä¸Šæ¬¡å­˜å–æ™‚é–“:u   æª”æ¡ˆå¤§å°:u   å„²å­˜ç©ºé–“åºåˆ—Ú
+)rJ   r[   rO   r    rC   r©   r¦   rD   r¡   rQ   r”   )rb   Úinfor   r   r   rŒ   –  s    zFILE.get_infor   c             C   s   || | _ d S )N)Úpen)rb   r°   Zrelativer   r   r   rª      s    z	FILE.seekc       	      C   s<  |d kr|| _ | jdkr$| | j¡}t|ƒ}| j | | jkr`| j | | _| j | j¡ |  d¡ | jd krt	|| j| j ƒ}|t|ƒkst
+dƒ‚d}d}d}x‚|t| jjƒk r| jj| }|| j krBt|ƒtkrú| jj ||||d … ¡ |d7 }nFt|ƒtkr|d |d  }| jj |d |||| … ¡ ||7 }nÀt|ƒtkr˜|d | j kr|d | j  }| jj |d | |d |… ¡ |d7 }njt|ƒtkr|d |d  }|| | j krú|| j |  }| jj |d | j |  |d |… ¡ ||7 }|d7 }|t|ƒd krP qW |  j |7  _ |  d¡ |S )Nr¢   r   u   åŠ å¯†éŒ¯èª¤r   i   r)   r©   )r°   r§   r7   r%   rD   r¡   rl   r«   r‡   r   r¨   rQ   rO   r   r\   rz   rp   rP   )	rb   rs   r°   r>   r2   rL   ÚskiprX   Zw_sizer   r   r   rp   ¢  sT     
+
+
+
+ 
+ 
+& 
+z
+FILE.writec             C   s¾   |dkrxt d|ƒ}|  ||¡}|g}||8 }x@|dkrlt d|ƒ}|  |¡}t|ƒdkrXP | |¡ ||8 }q.W d |¡S d}|  ||¡}|g}x$t|ƒdkr²|  |¡}| |¡ qW d |¡S )Nr   i   r’   )ÚminÚ_FILE__readr%   rJ   r”   )rb   r>   r°   Úr_sizeÚcodeZ
+total_byter   r   r   r`   Õ  s(    
+
+
+
+
+
+
+z	FILE.readc                s.  ‡ ‡fdd„}|d kr|ˆ_ ˆj }|dkr8ˆjˆj  }nt|ˆjˆj  ƒ}|}g ‰ d}d}xb|tˆjjƒk r¾ˆjj| }|ˆj krêt|ƒtkr°td|ƒ}	|||	ƒ ||	8 }n8t|ƒtkrèt|d |d  |ƒ}	||d |	ƒ ||	8 }nÀt|ƒtkr@|d ˆj kr6t|d ˆj  |ƒ}	||d |	 |	ƒ ||	8 }|d7 }njt|ƒtkrª|d |d  }
+||
+ ˆj kr¢t|
+ˆj |  |ƒ}	||d ˆj |  |	ƒ ||	8 }||
+7 }|d7 }|dkr^P q^W ˆ j |7  _ ˆ 	d¡ d 
+ˆ ¡}ˆjd krt|ˆj|ƒ}|t|ƒkstdƒ‚ˆjd	kr*| ˆj¡}|S )
+Nc                s   ˆ   ˆjj | |¡¡ d S )N)rJ   r\   rz   r`   )r…   r>   )rs   rb   r   r   Ú	disk_readë  s    zFILE.__read.<locals>.disk_readr   i   r)   r¦   r’   u   è§£å¯†éŒ¯èª¤r¢   )r°   rD   r²   r%   r¡   rQ   rO   r   rP   r«   r”   r‡   r   r¨   r§   ra   )rb   r>   r°   r¶   Zread_penZ	read_sizer2   r±   rX   r´   Zt_sizeZ	read_byter   )rs   rb   r   Z__readê  s^     
+
+
+
+
+
+ 
+
+zFILE.__readc             C   s   d | _ d | _d S )N)r\   r¡   )rb   r   r   r   Úclose   s    z
+FILE.close)r¢   N)r   )N)r   N)r   N)rt   ru   rv   re   r   r•   r«   rŒ   rª   rp   r`   r³   r·   r   r   r   r   rˆ   k  s   
+
+
+
+3
+
+6rˆ   c               @   s  e Zd ZdFdd„Zdd„ Zdd„ Zd	d
+„ Zdd„ Zdd„ ZdGdd„Z	dd„ Z
+dHdd„Zdd„ Zdd„ ZdIdd„ZdJdd „Zd!d"„ Zd#d$„ ZdKd%d&„Zd'd(„ Zd)d*„ Zd+d,„ Zd-d.„ Zd/d0„ Zd1d2„ Zd3d4„ Zd5d6„ Zd7d8„ ZdLd9d:„Zd;d<„ ZdMd=d>„ZdNd@dA„ZdOdBdC„Z dDdE„ Z!dS )PÚVDiskr   Nc             C   sz   d| _ || _d| _d| _|d kr0t| d¡dƒnd | _tƒ | _| jdkrNd| _t	 
+| j¡sntd| jƒ |  ¡  |  ¡  d S )	NFzVDisk:i   zutf-8i   r   zdefault.disku   å‰µå»º:)r^   Ú	disk_pathÚwork_folderÚ	fdsc_unitr   r7   r‡   r	   Ú_VDisk__rdiskr   Úisdirr   Ú_VDisk__create_new_diskÚ_VDisk__load_disk)rb   r¹   Úpasswordr   r   r   re   $  s    
+zVDisk.__init__c             C   sˆ   | j d }d}xH| j D ]>}t|ƒtkr0|d7 }qt|ƒtkr|d |d  }||7 }qW | jjd | _| jj| _	| j
+j| _|| | _d S )Nr(   r   i   r)   rZ   )Úfile_space_configuration_serialrO   r   rP   r_   r}   Z	fdsc_sizeÚfscrD   Zfsc_sizeÚfdcZfdc_sizeÚ	used_size)rb   r   r   r   Zg_sizer   r   r   Úrecalculate_size2  s    
+
+
+
+zVDisk.recalculate_sizec             C   s@   |   ¡  g }| dt| jƒ› ¡ | d| jj› ¡ d |¡S )Nz
+used_size:zaccess_rights:r®   )rÅ   rJ   r
+   rÄ   Úrootr   r”   )rb   Zinfo_boxr   r   r   rŒ   D  s
+    zVDisk.get_infoc             C   s   |   ¡  |  ¡  d S )N)r¾   r¿   )rb   r   r   r   r.   J  s    zVDisk.formatc             C   s  | j  | j¡ t| jƒ}tƒ }| dtd|||ddƒ¡ | dtd|||dt| jd ƒ› dƒ¡ | dtd|||t	| jd d › d 
+¡ ƒt| jd d	 ƒ› dƒ¡ | d
+td|||dt| jd d ƒ› dƒ¡ | | jd d¡ | | jd d	 | jd d › d 
+¡ ¡ | ¡  d S )Nr   Tz---rZ   é   rF   é   i   i   i€  Fi   s   512*)r¼   Úmkdirr¹   r   r   rp   rE   r   r»   r%   r7   r·   )rb   rz   r   r   r   r   Z__create_new_diskM  s    
+*F.*zVDisk.__create_new_diskc             C   sŠ   t | jƒ| _t| d| jd| _t| dƒ| _t| dƒ| _t	| j 
+dd¡ ¡ ƒ| _t	| j 
+dd¡ ¡ ƒ| _t| d| jd| _d| _|  ¡  d S )Nr   )ry   rZ   rÈ   i€  )r‡   )r   r¹   rz   rw   r»   r_   rˆ   rÃ   rÂ   rN   r`   ra   Ú"file_describe_configuration_serialrÁ   r†   r‡   rÆ   Úsave_configuration_lockrÅ   )rb   r   r   r   Z__load_diskZ  s    zVDisk.__load_diskr)   c             C   sÄ   | j }g }| jj}xœt|ƒ|k r®|d }t|ƒdkr<|d= nt|ƒdkrX|d  d7  < ||kr–| jt| jd ƒddd d }| j |¡ | jj}q|| jjkr| 	|¡ qW |dkrÀ|d S |S )Nr   r)   rZ   é   T)Ú
+continuous)
+rÊ   r_   r}   r%   rh   r   r»   r   r{   rJ   )rb   ÚnumberrQ   rU   r}   Zwant_use_ptrrc   r   r   r   ro   f  s$     
+ z%VDisk.register_describe_configurationc             C   sN   | j }t|ƒtkr0|d d… | |d g | _ n|d d… ||d g | _ d S )Nr(   )rÊ   rO   Úlist)rb   r]   rQ   r   r   r   rq   x  s    z'VDisk.unregister_describe_configurationFc             C   sF  | j }g }d}xÜ|t|ƒd k rê|dkrê|| }t|ƒtkrT|sT| |¡ |d8 }n€t|ƒtkrÔ|d |d  d }||kr¾| |d |d d|  f¡ |d d|  |d f|d< d}P n|sÔ| |¡ ||8 }|sà|d= q|d7 }qW |dkrB|dkr| |d ¡ n| |d |d d|  f¡ |d  d| 7  < |S )Nr   r)   i   r(   )rÁ   r%   rO   r   rJ   rP   )rb   rÎ   rÍ   rQ   rU   r2   rX   rf   r   r   r   rh   }  s6    
+
+
+
+
+zVDisk.apply_spacec             C   s&   | j }|d d… | |d g | _ d S )Nr(   )rÁ   )rb   rk   rQ   r   r   r   ri     s    zVDisk.release_spacec       	      C   s  | j dkrd| _ | j}| j}xŞt| jƒ ¡ }t|ƒ}||j ¡ kr€|j ¡ | d d }|  	|¡}|j j
+|7  _
+|j ¡  q t| jƒ ¡ }t|ƒ}||j ¡ krà|j ¡ | d d }|  	|¡}|j j
+|7  _
+|j ¡  q | |d¡ | |d¡ P q W d| _ d S )Nr   r)   i   )rË   rÃ   rÂ   rR   rÊ   r7   r%   r¡   rg   rh   rQ   rj   rÁ   rp   )	rb   Zfile_describe_configurationZfile_space_configurationrs   r>   Zneed_numberrU   Zbyte2Zn2r   r   r   rr   ¡  s.    
+
+zVDisk.save_configurationr¢   c             C   sX   |dkr| j S | j||d}|dkr(|S t| ||| jd}|jdkrTt| || jdS |S )Nr   )Úoperater(   )r§   r‡   r   )r‡   )rÆ   Ú_VDisk__get_file_ptrrˆ   r‡   rO   r†   )rb   ÚfilepathÚmoder§   r[   r‰   r   r   r   Úfopen¾  s      
+zVDisk.fopenr   c                s4   ‡ ‡‡‡fdd„‰|  dd¡ d¡‰ ˆˆjdƒ}|S )Nc                sš   |   ˆ | ¡}|dkr@ˆdkr<|tˆ ƒd kr<|  ˆ | ¡}|S |tˆ ƒd krjˆdkrf|  ˆ | ¡ |S tˆ|ˆjd}|jdkrˆdS ˆ||d ƒS d S )Nr(   r)   r"   )r‡   )r˜   r%   rš   rœ   r†   r‡   rO   )Z	nowfolderrL   r[   rz   )rM   r   rĞ   rb   r   r   r   Ë  s    
+ z%VDisk.__get_file_ptr.<locals>.listdirú\r   r   )r,   r+   rÆ   )rb   rÒ   rĞ   Zfile_ptrr   )rM   r   rĞ   rb   r   Z__get_file_ptrÊ  s    zVDisk.__get_file_ptrc             C   sT   |  dd¡ d¡}|dkr"|d7 }d|kr:| j› d|› }| d¡}||d d … S )NrÕ   r   zVDisk:z:/r"   )r,   Úrstriprº   rI   )rb   rÒ   rL   r   r   r   Z__relatively_to_absoluteà  s    
+zVDisk.__relatively_to_absolutec             C   s   |   d| ¡\}}dd„ |D ƒS )Nr   c             S   s   g | ]}|d  ‘qS )r)   r   )Ú.0Úitemr   r   r   ú
+<listcomp>ê  s    z%VDisk.listdir_all.<locals>.<listcomp>)Ú_VDisk__package_file)rb   Ú	file_listr   r   r   r   Úlistdir_allè  s    zVDisk.listdir_allc       
+      C   s˜   |   |¡}|dkr"| jj|d}n4|  |¡}|dkr:|}nt| || jd}|j|d}|s^|S g }x0|D ](\}}t| || jd}	||	_| |	¡ qhW |S )Nr   )r–   r(   )r‡   )	Ú_VDisk__relatively_to_absoluterÆ   r   rÑ   r†   r‡   rˆ   r/   rJ   )
+rb   Zfolder_pathr¯   rW   r–   ZfolderrM   r/   r[   r‰   r   r   r   r   ë  s     
+ 
+ zVDisk.listdirc             C   s>   |   |¡}|  |¡}|jdkr"dS | d¡ t| |j| jdS )Nr   r(   )r‡   )rİ   rÔ   rD   r   r†   r[   r‡   )rb   r   rz   r   r   r   rÉ   ü  s    
+
+
+ 
+zVDisk.mkdirc             C   s   |   |  |¡¡ d S )N)r   rİ   )rb   Ú
+foldernamer   r   r   Úrmdir  s    zVDisk.rmdirc             C   s   | j S )N)rº   )rb   r   r   r   Úgetcwd  s    zVDisk.getcwdc       	      C   s¦   |   |¡}|   |¡}| d¡d }| d¡d }|d t|ƒ d … }| j|dd}|d t|ƒ d … }| j|dd}t|ƒtkr¢t|ƒtkr¢| |||¡ dS dS )Nr   r(   r)   r   )rÓ   TF)rİ   r+   r%   rÔ   rO   r†   r    )	rb   Ú	filepath1Z	filepath2r   rŸ   Zfolderpath1Zfolder1Zfolderpath2Zfolder2r   r   r   Úrename  s    
+
+zVDisk.renamec             C   s   | j |  |¡dd}|S )Nr"   )rĞ   )rÑ   rİ   )rb   rÒ   r[   r   r   r   r     s    zVDisk.removec             C   s.   |   |¡}|  |¡r$| d¡| _d S tƒ ‚d S )Nr   )rİ   r½   rÖ   rº   r€   )rb   rŞ   r   r   r   Úchdir  s
+    
+
+zVDisk.chdirc             C   s,   |dkrdS | j |  |¡dd}t|ƒtkS )Nr   Fr   )rÓ   )rÔ   rİ   rO   rˆ   )rb   rÒ   r‰   r   r   r   r<     s     zVDisk.isfilec             C   s0   |   |¡}|dkrdS | j|dd}t|ƒtkS )Nr   Tr   )rÓ   )rİ   rÔ   rO   r†   )rb   Ú
+folderpathr‰   r   r   r   r½   $  s
+    
+zVDisk.isdirc             C   s   | j |  |¡dd}|jS )Nr   )rÓ   )rÔ   rİ   rD   )rb   rÒ   r‰   r   r   r   Úgetsize*  s    zVDisk.getsizec             C   s:   |   |¡}|d kr,|dkr d}n|dkr,d}| j||dS )N)NÚwbÚrbZabr¢   )ÚrÚwr9   zutf-8)r§   )rİ   rÔ   )rb   rÒ   rÓ   r§   r   r   r   Úopen-  s    
+z
+VDisk.openc                s€   ‡ ‡‡‡fdd„‰g ‰|  d¡d }t|d t|ƒ … ƒ‰ˆ  |¡rbd||ˆd … fgˆ  |¡fS ˆ  |¡r|ˆ|ƒ}ˆ|fS d S )Nc                s˜   d}ˆ   | ¡}| dkr6ˆ d| | ˆd … f¡ | d7 } x\|D ]T}| | }ˆ  |¡r`|ˆ|ƒ7 }q<ˆ  |¡r<ˆ d||ˆd … f¡ |ˆ  |¡7 }q<W |S )Nr   r   r   r)   )r   rJ   r½   r<   rå   )rä   r   r1   r   rÒ   )r\   rÛ   Úpackage_fileÚpf_kr   r   rë   7  s    
+
+
+
+z*VDisk.__package_file.<locals>.package_filer   r(   r)   )r+   r%   r<   rå   r½   )rb   Z	file_pathr\   r-   r   r   )r\   rÛ   rë   rì   r   Z__package_file6  s    
+
+zVDisk.__package_filec          	   C   s®  |dkrt }|  ||¡\}}|dkr2| d¡d }d}d}	g }
+tƒ }xR|D ]H\}}}|dkrp| || ¡ qL|dkrL| |d¡}| || d¡}d	}| |¡}xât|ƒdkr„| |¡ |t|ƒ7 }| |¡}|d kr¤|| |	kr¤|
+ 	tƒ | ¡ tƒ }|	d7 }	|d t|
+ƒ t
+|
+ƒ }d
+t|ƒ› d}dt|| | ƒ› d}|||ddt|ƒ  | ddt|ƒ   | d |
+dd … }
+q¤W | ¡  | ¡  qLW |dkrªtƒ  d S )NÚdefaultr   r   r   é   r)   rç   ræ   i   zspeed:z/szremain:r8   r   r5   )Zhintiöÿÿÿ)r   rÚ   rÖ   r   rÉ   rê   r`   r%   rp   rJ   Úsumr
+   r   r·   r   )rb   Zdisk1rá   Zdisk2Úparent_folderÚprogress_funcrÛ   r   r   Znext_progressZtime_boxÚstZftyperÒ   r-   ZrfZwfr´   rµ   Zaverage_speedZ
+speed_hintZremain_hintr   r   r   Z__move_filesM  sD    
+
+
+2
+zVDisk.__move_filesrí   c             C   s*   |dkrt d|ƒ |  | j|| ||¡ d S )Nrí   zinput:)r   Ú_VDisk__move_filesr¼   )rb   Zreal_filepathrğ   rñ   r   r   r   Úinputr  s    
+zVDisk.inputc             C   s*   |dkrt d|ƒ |  | || j||¡ d S )Nrí   zoutput:)r   ró   r¼   )rb   Zvirtual_filepathrğ   rñ   r   r   r   Úoutputv  s    
+zVDisk.outputc             C   s   | j  ¡  d S )N)rz   r·   )rb   r   r   r   r·   z  s    zVDisk.close)r   N)r)   )F)r)   r¢   )r   )r   F)NN)r   N)r   rí   )r   rí   )"rt   ru   rv   re   rÅ   rŒ   r.   r¾   r¿   ro   rq   rh   ri   rr   rÔ   rÑ   rİ   rÜ   r   rÉ   rß   rà   râ   r   rã   r<   r½   rå   rê   rÚ   ró   rô   rõ   r·   r   r   r   r   r¸   #  s>   
+
+
+!
+
+
+
+	
+%
+
+r¸   Ú__main__N)r   )%Úosr   r   r   r   r   Zvm.cryptr   r   Úvm.real_diskr	   Úvm.toolr
+   r   Z	vm.writerr   r   r    r   r3   r:   rE   rN   rR   rV   rT   rY   rw   r†   rˆ   r¸   rt   ZDiskr\   ÚTerminalr   Zmainloopr   r   r   r   Ú<module>   s8   
+
+R-  9  [
+2361*121*writer.cpython-37.pycB
+    :á‘e¼	  ã               @   sB   d dl mZ d dlmZmZ d dlmZmZ dZG dd„ dƒZ	dS )é    )ÚLock)ÚmkdirÚlistdir)ÚisfileÚisdiri   @c               @   s6   e Zd Zddd„Zdd„ Zdd„ Zdd	„ Zd
+d„ ZdS )ÚFWriteré   c             C   s   |  dd¡ d¡}|| _t|ƒs(t|ƒ g | _|  d¡ d}x>t|› d|› dƒrz| j t	|› d|› ddƒ¡ |d7 }q>W || _
+tƒ | _d S )Nú\ú/r   é   z.dkzrb+)ÚreplaceÚrstripÚ_FWriter__disk_folder_pathr   r   Ú_FWriter__fsÚ_FWriter__expand_diskr   ÚappendÚopenÚ_FWriter__slice_sizer   Ú_FWriter__lock)ÚselfZdisk_folder_pathZ
+slice_sizeÚk© r   ú)C:\Users\allen\Desktop\py\VM\vm\writer.pyÚ__init__   s    
+zFWriter.__init__c             C   s^   t | jƒ}xN||krX| j› d|› d}t|ƒs<t|dƒ ¡  | j t|dƒ¡ |d7 }qW d S )Nr
+   z.dkÚwbzrb+r   )Úlenr   r   r   r   Úcloser   )r   Z	max_orderr   Zdk_namer   r   r   Z__expand_disk   s    
+
+zFWriter.__expand_diskc             C   sÜ   | j  ¡  || j }|| j }d}t|ƒ}d}xv||k r¤|t| jƒkrP|  |¡ | j| }| |d¡ |||| j | … }	d}|| |	¡7 }|t|	ƒ7 }|d7 }q0W | j  ¡  |  	||¡}
+||
+krØt
+d|› d|› ƒ‚|S )Nr   r   zdptr:z  content_len:)r   Úacquirer   r   r   r   ÚseekÚwriteÚreleaseÚreadÚ	Exception)r   ÚdptrÚcontentÚf_orderZwptrZ	write_lenZcontent_lenZresult_nÚfZ
+slice_codeZcontent2r   r   r   r      s*    
+
+
+
+
+
+
+zFWriter.writec             C   s–   | j  ¡  || j }|| j }g }x^|dkr€|t| jƒkr<P | j| }| |d¡ | |¡}d}| |¡ |t|ƒ8 }|d7 }q$W | j  ¡  d 	|¡S )Nr   r   ó    )
+r   r   r   r   r   r   r!   r   r    Újoin)r   r#   Znumr%   ZrptrZcontent_boxr&   Zslice_contentr   r   r   r!   3   s     
+
+
+
+
+
+
+
+zFWriter.readc             C   s   x| j D ]}| ¡  qW d S )N)r   r   )r   r&   r   r   r   r   D   s    zFWriter.closeN)r   )Ú__name__Ú
+__module__Ú__qualname__r   r   r   r!   r   r   r   r   r   r      s
+   
+r   N)
+Z	threadingr   Úosr   r   Úos.pathr   r   ÚGBr   r   r   r   r   Ú<module>   s   330*123*__init__.cpython-37.pycB
+    Ûƒe†   ã               @   s4   d dl mZ d dlmZ d dlmZ d dlmZ dS )é    )ÚVDisk)ÚRDisk)ÚTerminal)Úget_host_ipN)Zvm.virtual_diskr   Zvm.real_diskr   Zvm.terminalr   Zvm.toolr   © r   r   ú+C:\Users\allen\Desktop\py\VM\vm\__init__.pyÚ<module>   s   2878*17*main.pyfrom vm import VDisk,get_host_ip
+from sys import argv
+from os import listdir,remove,system
+from os.path import isfile
+
+vm_hint='''
+-d disk_name                           æŒ‡å®šdisk_nameç‚ºé–‹å•Ÿçš„ç£ç¢Ÿ(é»˜èªç‚ºå¸¶.diskæª”åçš„ç£ç¢Ÿ)
+-i r_filepath (at v_parent_folder)     å°‡r_filepathè¼¸å…¥ç£ç¢Ÿï¼Œv_parent_folderç‚ºè™›æ“¬è³‡æ–™å¤¾åç¨±
+-o v_filepath (at r_parent_folder)     å°‡v_filepathè¼¸å‡ºç£ç¢Ÿï¼Œr_parent_folderç‚ºå¯¦é«”è³‡æ–™å¤¾åç¨±
+-l foldername                          å±•é–‹è™›æ“¬æ©Ÿfoldernameçš„è³‡æ–™å¤¾
+-p password                            é™„åŠ ç£ç¢Ÿå¯†ç¢¼
+-creat                                 å‰µå»ºç£ç¢Ÿ
+-control                               é€²å…¥ç£ç¢Ÿæ“ä½œæ¨¡å¼
+'''
+
+if len(argv)==1:
+    print(vm_hint)
+else:
+    disk_path=''
+    input_files=[]
+    output_files=[]
+    listdir_folders=[]
+    password=None
+    creat=False
+    control=False
+    k=1
+    while k<len(argv):
+        if argv[k]=='-d':
+            k+=1
+            disk_path=argv[k]
+        elif argv[k]=='-i':
+            k+=1
+            input_files.append([argv[k],''])
+            if len(argv)>k+1 and argv[k+1]=='at':
+                input_files[-1][1]=argv[k+2]
+                k+=2
+        elif argv[k]=='-o':
+            k+=1
+            output_files.append([argv[k],''])
+            if len(argv)>k+1 and argv[k+1]=='at':
+                output_files[-1][1]=argv[k+2]
+                k+=2
+        elif argv[k]=='-l':
+            k+=1
+            if k >= len(argv):
+                listdir_folders.append('')
+            else:
+                listdir_folders.append(argv[k])
+        elif argv[k]=='-p':
+            k+=1
+            password=argv[k]
+        elif argv[k]=='-creat':
+            creat=True
+        elif argv[k]=='-control':
+            control=True
+        k+=1
+    if creat and isfile(disk_path):
+        remove(disk_path)
+    if disk_path=='':
+        for i in listdir():
+            if i.split('.')[-1]=='disk':
+                disk_path=i
+        if disk_path=='':
+            disk_path='default.disk'
+        print('disk path:',disk_path)
+    vd=VDisk(disk_path,password)
+    print(vd.get_info())
+    if vd.root.access_rights:
+        for filepath,parent_folder in input_files:
+            vd.input(filepath,parent_folder,'default')
+        for foldername in listdir_folders:
+            print(vd.listdir(foldername))
+        for filepath, parent_folder in output_files:
+            vd.output(filepath, parent_folder, 'default')
+        if control:
+            disk_name=disk_path.split('.')[0]
+            url=f'https://{get_host_ip()}:3030?disk={disk_name}&pd={password}'
+            print(f'é–‹å•Ÿé€£ç·š:   {url}\n')
+
+            system(f'start chrome /incognito "{url}"')
+            system('server')
+    else:
+        print('å¯†ç¢¼éŒ¯èª¤ï¼Œå­˜å–è¢«æ‹’')
